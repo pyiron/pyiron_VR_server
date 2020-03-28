@@ -1,0 +1,2 @@
+Not yet implemented
+In the future, it might be useful if structures can get saved while the user is in VR. These structures might get saved next to where the original structure was located, but it might be also useful and easier if they get stored here.

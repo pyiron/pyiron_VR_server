@@ -1,0 +1,5 @@
+#ignore jobs/structures
+*.hd5
+*hdf5
+*.bz2
+*.h5
