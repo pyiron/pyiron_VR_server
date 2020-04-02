@@ -12,10 +12,12 @@ from pyiron.project import Project
 cwd = os.getcwd().replace("\\", "/").split("/")
 # Add the path to PYTHONPATH. This way the other scripts (e.g. Executor) can be called
 sys.path.append(os.getcwd()[:- len(cwd[-1]) - len(cwd[-2]) - 2])
-from pyiron_mpie.vrplugin.Executor import Executor
+from Executor import Executor
 
 
 class UnityManager:
+    project = None
+
     def __init__(self, start_path=os.path.join('.', 'Structures')):
         # self.ProjectExplorer = ProjectExplorer(self)
         # print("abspath: " + os.path.abspath('.'))
@@ -110,7 +112,7 @@ class UnityManager:
 
         # todo: has a long loading time (~5s)
         # TODO: if name already exists, this throws an error. Fixed by try catch, but another solution would be better
-        self.project = job.copy_to(pr)
+        # self.project = job.copy_to(pr)
 
 
 if __name__ == '__main__':

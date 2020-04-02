@@ -5,6 +5,8 @@
 import traceback
 
 class Executor():
+    job = None
+
     def __init__(self, unity_manager, job):
         self.unity_manager = unity_manager
         self.job = job
