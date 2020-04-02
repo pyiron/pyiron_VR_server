@@ -23,7 +23,7 @@ class UnityManager:
         # print("abspath: " + os.path.abspath('.'))
         self.startPath = start_path  # os.path.join('.', 'Structures')
         print("Path in UM: " + self.startPath)
-        self.project = Project(self.startPath)
+        UnityManager.project = Project(self.startPath)
 
         self.Executor = None
         self.empty = "empty"
@@ -84,11 +84,11 @@ class UnityManager:
 
     def delete_scratch(self):
         if self.Executor is not None:
-            pr = self.Executor.pr.project
-            if "save" not in pr.path:
-                pr.remove_jobs(True)
-                pr = pr[".."]
-                pr.removedirs("scratch")
+            # pr = self.Executor.pr.project
+            if "save" not in UnityManager.project.path:
+                UnityManager.project.remove_jobs(True)
+                UnityManager.project = UnityManager.project[".."]
+                UnityManager.project.removedirs("scratch")
 
     """
     Called from the Unity program. Creates a new Folder in which the structure gets edited, loads the structure and 

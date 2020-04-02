@@ -15,11 +15,11 @@ pr.create_group("Examples")
 pr = pr["Examples"]
 pr.remove_jobs()
 
-strucs = ["small", "medium", "big", "minimize", "md"]
+strucs = ["minimize", "md"]
 for i in range(len(strucs)):
     # create the new job
-    basis = pr.create_ase_bulk(element, cubic=True)
-    basis = basis.repeat([(i % 3 + 1) , 1, 1])
+    basis = pr.create_ase_bulk(element, cubic=False)
+    basis = basis.repeat([2 , 2, 2])
     basis.set_absolute()
     basis.positions[1, 0] += 2
 

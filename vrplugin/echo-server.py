@@ -24,6 +24,7 @@ um_path = os.getcwd()
 print("umpath: " + um_path)
 sys.path.append(um_path)
 import UnityManager as UM
+import Structure
 # import pyiron_mpie.vrplugin.UnityManager as UM
 
 # Standard loopback interface address. Should be the ip address of the server computer.
@@ -92,6 +93,7 @@ ip_addr = get_ip()
 # pwd = input("Insert the password for the server...")
 print("Waiting for connections with IP Address " + ip_addr)
 unity_manager = UM.UnityManager()
+structureManager = Structure.Structure()
 # a buffervor the received data
 data_buf = ""
 while t_run:
@@ -126,7 +128,7 @@ while t_run:
                 print('data: {}'.format(data_buf))
                 if data.__contains__('end server'):
                     print('server will be stopped')
-                    unity_manager.delete_scratch()
+                    # unity_manager.delete_scratch()
                     t_run = False
                     break
 
