@@ -23,22 +23,29 @@ class Structure():
     #         self.structure = job.get_str
 
     def create_default_structure(self):
-        self.create_new_structure("Fe", True, False)
+        self.create("Fe", 2, True, False)
 
-    def create_new_structure(self, element, cubic, orthorhombic):
-        self.structure = UnityManager.UnityManager.project.create_ase_bulk(name=element, cubic=True, orthorhombic=orthorhombic)
+    def create(self, element, repeat, cubic, orthorhombic):
+        try:
+            self.structure = UnityManager.UnityManager.project.create_ase_bulk(
+                element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
+        except RuntimeError as e:
+            return "Error: " + str(e)
+        return str(self.structure)
         # self.structure.
 
     #
     # if no structure loaded: create default struc and send to Unity
     # if structure is loaded: return the structure
 
-UnityManager.UnityManager()
-myStruc = Structure()
-myStruc.create_default_structure()
-print(myStruc.get_data())
-myStruc.structure.name = "Mg"
-myStruc.structure = myStruc.structure.repeat([2 , 2, 2])
-myStruc.structure.cubic = True
-myStruc.structure.orthorhombic = True
-print(myStruc.get_data())
+# UnityManager.UnityManager()
+# myStruc = Structure()
+# myStruc.create_default_structure()
+# # print(myStruc.structure.cubic)
+# # print(myStruc.structure.orthorhombic)
+# print(myStruc.get_data())
+# myStruc.structure.name = "Mg"
+# myStruc.structure = myStruc.structure.repeat([2 , 2, 2])
+# myStruc.structure.cubic = True
+# myStruc.structure.orthorhombic = True
+# print(myStruc.get_data())
