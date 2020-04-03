@@ -33,3 +33,5 @@ for i in range(len(strucs)):
     if strucs[i] == "md":
         ham_lammps.calc_md(temperature=30, n_ionic_steps=50, n_print=1)
         ham_lammps.run()
+        # print(ham_lammps.output.temperature)
+        # print(ham_lammps.output.n_ionic_steps)

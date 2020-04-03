@@ -4,15 +4,11 @@
 
 import traceback
 
+
 class Executor():
     job = None
 
-    def __init__(self, unity_manager, job):
-        self.unity_manager = unity_manager
-        Executor.job = job
-        # check if the structure is given as a ham_lammps or if it is just a basis
-        # determines how often new info data should be send to Unity, sending it each frame would flicker
-        self.send_data_frequency = 0.5
+    def __init__(self):
         # needed so that each new created job has a unique name
         self.job_id = 0
 
@@ -27,20 +23,25 @@ class Executor():
         self.all_temperatures = None
         self.all_elements = None
 
+    def load_job(self, job):
+        Executor.job = job
+
         # signals whether this is the first time Python sends data to Unity or if it isn't
         self.firstSend = True
         # set all_forces to None because it is not yet known
         self.all_forces = None
-        # test if the structure has a given temperature
-        if Executor.job.input.control["fix"]:
-            if len(Executor.job.input.control["fix"].split()) > 4:
-                # get the temperature with which the ham_lammps was inited
-                self.temperature = Executor.job.input.control["fix"].split()[4]
 
         # set the temperature to a default value, might be overwritten if the job has a temperature
         self.temperature = 100
+        # test if the structure has a given temperature
+        if Executor.job.input.control["fix"]:
+            if len(Executor.job.input.control["fix"].split()) > 4:
+                # get the temperature with which the ham_lammps was initiated
+                self.temperature = Executor.job.input.control["fix"].split()[4]
+
         # get the data about the structure, such as the positions and the forces
         self.get_structure_data(True, True, True)
+        return self.formated_data
 
     """
     Receive and handle input from Unity.
@@ -285,7 +286,7 @@ class Executor():
             temperature = int(float(self.temperature))
             self.firstSend = False
         else:
-            temperature = self.unity_manager.empty
+            temperature = "empty"
 
         anim_frames = len(self.all_positions) - 1
 

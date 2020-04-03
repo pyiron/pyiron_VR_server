@@ -95,10 +95,11 @@ class UnityManager:
     returns the data of the structure.
     """
 
-    def send_job(self):
-        self.create_folder_with_job(self.project, "scratch")
-        self.Executor = Executor(self, self.project)
-        return self.Executor.formated_data
+    # def send_job(self):
+    #     # self.create_folder_with_job(self.project, "scratch")
+    #     # self.Executor = Executor(self, self.project)
+    #
+    #     return self.Executor.formated_data
 
     """
     Create the scratch folder which is the workspace and which will be deleted when the program gets stopped.
