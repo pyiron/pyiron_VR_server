@@ -45,6 +45,8 @@ class Structure():
     def format_structure(self):
         formated_data = {}
         formated_data["elements"] = list(self.structure.get_chemical_symbols())
+        formated_data["size"] = len(self.structure.positions)
+        formated_data["frames"] = 1
         formated_data["positions"] = self.array_to_vec3(self.structure.positions)
         formated_data["cell"] = self.array_to_vec3(self.structure.cell)
         # print(numpy.stack(self.structure.positions, axis=0))
