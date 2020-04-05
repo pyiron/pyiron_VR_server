@@ -3,6 +3,10 @@
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
 import traceback
+import UnityManager
+from Structure import Structure
+import Formatter
+import numpy as np
 
 
 class Executor():
@@ -23,8 +27,24 @@ class Executor():
         self.all_temperatures = None
         self.all_elements = None
 
+    def on_calculate_enter(self):
+        if Executor.job is None:
+            print("creating a new job...")
+
+    def create_default_job(self):
+        Executor.job = UnityManager.project.create_job(UnityManager.project.job_type.Lammps,
+                                                       Structure.structure.get_chemical_formula())
+        Executor.job.structure = Structure.structure
+        if len(Executor.job.list_potentials()) > 0:
+            Executor.job.potential = Executor.job.list_potentials()[0]
+
     def load_job(self, job):
-        Executor.job = job
+        if job is None:
+            # create a new job
+            self.create_default_job()
+        else:
+            Executor.job = job
+            Structure.structure = job.structure
 
         # signals whether this is the first time Python sends data to Unity or if it isn't
         self.firstSend = True
@@ -39,9 +59,11 @@ class Executor():
                 # get the temperature with which the ham_lammps was initiated
                 self.temperature = Executor.job.input.control["fix"].split()[4]
 
+        return self.format_job()
+
         # get the data about the structure, such as the positions and the forces
-        self.get_structure_data(True, True, True)
-        return self.formated_data
+        # self.get_structure_data(True, True, True)
+        # return self.formated_data
 
     """
     Receive and handle input from Unity.
@@ -265,6 +287,25 @@ class Executor():
     """
     Format the data that should be send to Unity.
     """
+
+    def format_job_settings(self):
+        data = {}
+        data["job_type"] = Executor.job["TYPE"].split("'")[1].split(".")[-1]
+        data["job_name"] = Structure.structure.get_chemical_formula()
+        data["currentPotential"] = Executor.job.potential['Name'].values[0]
+        data["potentials"] = list(Executor.job.list_potentials())
+        return Formatter.dict_to_json(data)
+
+    def format_job(self):
+        formated_data = {}
+        formated_data["elements"] = list(Structure.structure.get_chemical_symbols())
+        positions = Executor.job["output/generic/positions"]
+        formated_data["size"] = len(Structure.structure.positions)
+        formated_data["frames"] = len(positions)
+        formated_data["positions"] = Formatter.array_to_vec3(np.reshape(positions, (-1, 3)))
+        # formated_data["positions"] = Formatter.array_to_vec3(positions[0])
+        formated_data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        return Formatter.dict_to_json(formated_data)
 
     def format_data(self):
         # if self.temporaryBasis:  # not sure if this is needed

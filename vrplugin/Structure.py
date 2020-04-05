@@ -1,5 +1,6 @@
 import UnityManager
 import Executor
+import Formatter
 from pyiron.project import Project
 import json
 import numpy
@@ -9,11 +10,9 @@ class Structure():
     structure = None
 
     def __init__(self):
-        pass
+        self.create_default_structure()
 
     def get_data(self):
-        if self.structure is None:
-            self.create_default_structure()
         return self.format_structure()
 
     # def load_structure(self):
@@ -25,32 +24,25 @@ class Structure():
     #         self.structure = job.get_str
 
     def create_default_structure(self):
-        self.create("Fe", 2, True, False)
+        self.create("Fe", 1, True, False)
 
     def create(self, element, repeat, cubic, orthorhombic):
         try:
-            self.structure = UnityManager.UnityManager.project.create_ase_bulk(
+            Structure.structure = UnityManager.UnityManager.project.create_ase_bulk(
                 element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
         except RuntimeError as e:
             return "Error: " + str(e)
         return self.format_structure()
         # self.structure.
 
-    def array_to_vec3(self, arr):
-        myList = []
-        for elm in arr:
-            myList.append({"x": elm[0], "y": elm[1], "z": elm[2]})
-        return myList
-
     def format_structure(self):
         formated_data = {}
-        formated_data["elements"] = list(self.structure.get_chemical_symbols())
-        formated_data["size"] = len(self.structure.positions)
+        formated_data["elements"] = list(Structure.structure.get_chemical_symbols())
+        formated_data["size"] = len(Structure.structure.positions)
         formated_data["frames"] = 1
-        formated_data["positions"] = self.array_to_vec3(self.structure.positions)
-        formated_data["cell"] = self.array_to_vec3(self.structure.cell)
-        # print(numpy.stack(self.structure.positions, axis=0))
-        return str(formated_data).replace("'", "\"")
+        formated_data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
+        formated_data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        return Formatter.dict_to_json(formated_data)
 
 
     #

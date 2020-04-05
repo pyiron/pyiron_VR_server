@@ -18,7 +18,7 @@ pr.remove_jobs()
 strucs = ["minimize", "md"]
 for i in range(len(strucs)):
     # create the new job
-    basis = pr.create_ase_bulk(element, cubic=False)
+    basis = pr.create_ase_bulk(element, cubic=True)
     basis = basis.repeat([2 , 2, 2])
     basis.set_absolute()
     basis.positions[1, 0] += 2
@@ -30,6 +30,9 @@ for i in range(len(strucs)):
     if strucs[i] == "minimize":
         ham_lammps.calc_minimize(n_print=1)
         ham_lammps.run()
+        print(ham_lammps["NAME"])
+        print(ham_lammps["input"])
+        print(ham_lammps["TYPE"])
     if strucs[i] == "md":
         ham_lammps.calc_md(temperature=30, n_ionic_steps=50, n_print=1)
         ham_lammps.run()
