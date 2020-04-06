@@ -303,7 +303,20 @@ class Executor():
 
     def format_md_settings(self):
         data = {}
+        generic_par = self.get_generic_inp()
+        data["temperature"] = int(generic_par['temperature'])
+        data["n_ionic_steps"] = int(generic_par['n_ionic_steps'])
+        data["n_print"] = int(generic_par['n_print'])
+        return data
 
+    def format_minimize_settings(self):
+        data = {}
+        generic_par = self.get_generic_inp()
+        if 'f_eps' in generic_par:
+            data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
+        data["max_iterations"] = int(generic_par['max_iter'])
+        if 'n_print' in generic_par:
+            data["n_print"] = int(generic_par['n_print'])
         return data
 
     def format_job(self):
