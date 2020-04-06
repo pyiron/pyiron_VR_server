@@ -284,17 +284,27 @@ class Executor():
 
         return positions
 
+    def get_generic_inp(self):
+        j_dic = Executor.job['input/generic/data_dict']
+        return {k:v for k, v in zip(j_dic['Parameter'], j_dic['Value'])}
+
     """
     Format the data that should be send to Unity.
     """
 
     def format_job_settings(self):
         data = {}
+        data["calculation_type"] = self.get_generic_inp()["calc_mode"]
         data["job_type"] = Executor.job["TYPE"].split("'")[1].split(".")[-1]
         data["job_name"] = Structure.structure.get_chemical_formula()
         data["currentPotential"] = Executor.job.potential['Name'].values[0]
         data["potentials"] = list(Executor.job.list_potentials())
         return Formatter.dict_to_json(data)
+
+    def format_md_settings(self):
+        data = {}
+
+        return data
 
     def format_job(self):
         formated_data = {}
