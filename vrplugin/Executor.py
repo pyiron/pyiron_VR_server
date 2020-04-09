@@ -32,20 +32,13 @@ class Executor():
             print("creating a new job...")
 
     def create_default_job(self):
-        Executor.job = UnityManager.project.create_job(UnityManager.project.job_type.Lammps,
+        Executor.job = UnityManager.UnityManager.project.create_job(UnityManager.UnityManager.project.job_type.Lammps,
                                                        Structure.structure.get_chemical_formula())
         Executor.job.structure = Structure.structure
         if len(Executor.job.list_potentials()) > 0:
             Executor.job.potential = Executor.job.list_potentials()[0]
 
-    def load_job(self, job):
-        if job is None:
-            # create a new job
-            self.create_default_job()
-        else:
-            Executor.job = job
-            Structure.structure = job.structure
-
+    def initialize_job(self):
         # signals whether this is the first time Python sends data to Unity or if it isn't
         self.firstSend = True
         # set all_forces to None because it is not yet known
@@ -59,7 +52,16 @@ class Executor():
                 # get the temperature with which the ham_lammps was initiated
                 self.temperature = Executor.job.input.control["fix"].split()[4]
 
-        return self.format_job()
+    def load_job(self, job):
+        if Executor.job is None or job is None:
+            # create a new job
+            self.create_default_job()
+            self.initialize_job()
+        else:
+            Executor.job = job
+            Structure.structure = job.structure
+            self.initialize_job()
+            return self.format_job()
 
         # get the data about the structure, such as the positions and the forces
         # self.get_structure_data(True, True, True)
@@ -286,16 +288,35 @@ class Executor():
 
     def get_generic_inp(self):
         j_dic = Executor.job['input/generic/data_dict']
+        if j_dic is None:
+            return None
         return {k:v for k, v in zip(j_dic['Parameter'], j_dic['Value'])}
 
     """
     Format the data that should be send to Unity.
     """
 
+    def set_attribute(self, data, name, default):
+        generic_par = self.get_generic_inp()
+        if generic_par is None or name not in generic_par:
+            data[name] = default
+        else:
+            data[name] = generic_par[name]
+
     def format_job_settings(self):
         data = {}
-        data["calculation_type"] = self.get_generic_inp()["calc_mode"]
-        data["job_type"] = Executor.job["TYPE"].split("'")[1].split(".")[-1]
+        self.set_attribute(data, "calc_mode", "md")
+
+        # generic_par = self.get_generic_inp()
+        # if generic_par is None:
+        #     # set default value
+        #     data["calculation_type"] = "md"
+        # else:
+        #     data["calculation_type"] = self.get_generic_inp()["calc_mode"]
+        if Executor.job["TYPE"] is None:
+            data["job_type"] = "lammps"
+        else:
+            data["job_type"] = Executor.job["TYPE"].split("'")[1].split(".")[-1]
         data["job_name"] = Structure.structure.get_chemical_formula()
         data["currentPotential"] = Executor.job.potential['Name'].values[0]
         data["potentials"] = list(Executor.job.list_potentials())
@@ -303,20 +324,40 @@ class Executor():
 
     def format_md_settings(self):
         data = {}
-        generic_par = self.get_generic_inp()
-        data["temperature"] = int(generic_par['temperature'])
-        data["n_ionic_steps"] = int(generic_par['n_ionic_steps'])
-        data["n_print"] = int(generic_par['n_print'])
+        self.set_attribute(data, "temperature", 100)
+        self.set_attribute(data, "n_ionic_steps", 1000)
+        self.set_attribute(data, "n_print", 1)
+
+        # generic_par = self.get_generic_inp()
+        # if generic_par is not None:
+        #     # Set default values
+        #     data["temperature"] = 100
+        #     data["n_ionic_steps"] = 100
+        #     data["n_print"] = 1
+        # else:
+        #     data["temperature"] = int(generic_par['temperature'])
+        #     data["n_ionic_steps"] = int(generic_par['n_ionic_steps'])
+        #     data["n_print"] = int(generic_par['n_print'])
         return data
 
     def format_minimize_settings(self):
         data = {}
-        generic_par = self.get_generic_inp()
-        if 'f_eps' in generic_par:
-            data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
-        data["max_iterations"] = int(generic_par['max_iter'])
-        if 'n_print' in generic_par:
-            data["n_print"] = int(generic_par['n_print'])
+        self.set_attribute(data, "f_eps", 1e-8)
+        self.set_attribute(data, "max_iterations", 100000)
+        self.set_attribute(data, "n_print", 100)
+
+        # generic_par = self.get_generic_inp()
+        # if 'f_eps' in generic_par:
+        #     data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
+        # data["max_iterations"] = int(generic_par['max_iter'])
+        # if 'n_print' in generic_par:
+        #     data["n_print"] = int(generic_par['n_print'])
+        #
+        # if 'f_eps' in generic_par:
+        #     data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
+        # data["max_iterations"] = int(generic_par['max_iter'])
+        # if 'n_print' in generic_par:
+        #     data["n_print"] = int(generic_par['n_print'])
         return data
 
     def format_job(self):
