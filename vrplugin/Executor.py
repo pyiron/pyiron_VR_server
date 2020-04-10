@@ -53,7 +53,7 @@ class Executor():
                 self.temperature = Executor.job.input.control["fix"].split()[4]
 
     def load_job(self, job):
-        if Executor.job is None or job is None:
+        if job is None:
             # create a new job
             self.create_default_job()
             self.initialize_job()
@@ -320,7 +320,7 @@ class Executor():
             data["job_type"] = "lammps"
         else:
             data["job_type"] = Executor.job["TYPE"].split("'")[1].split(".")[-1]
-        data["job_name"] = Structure.structure.get_chemical_formula()
+        # data["job_name"] = Structure.structure.get_chemical_formula()
         data["currentPotential"] = Executor.job.potential['Name'].values[0]
         data["potentials"] = list(Executor.job.list_potentials())
         return Formatter.dict_to_json(data)
