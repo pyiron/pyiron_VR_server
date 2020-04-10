@@ -117,6 +117,8 @@ class Executor():
         self.get_structure_data(forces=True, shouldFormat=False)
 
     def prepare_structure(self, job_name, job_type, potential, frame=-1):
+
+
         temp_base = Executor.job.get_structure(frame)
 
         # if job_type == "ham_lammps":
@@ -129,6 +131,7 @@ class Executor():
 
 
         # TODO: use job_name instead. Can be done when Unity deletes the old job before creating the new ones
+        # argument snapshot seems to be the frame that should be used to calculate the new lammps
         Executor.job = self.job.next(job_name="temp_job_" + str(self.job_id))
         Executor.job.structure = temp_base
         self.job_id += 1

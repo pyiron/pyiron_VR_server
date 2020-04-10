@@ -15,14 +15,6 @@ class Structure():
     def get_data(self):
         return self.format_structure()
 
-    # def load_structure(self):
-    #     job = Executor.Executor.job
-    #     if job is None:
-    #         # Default parameters can be set here
-    #
-    #     else:
-    #         self.structure = job.get_str
-
     def create_default_structure(self):
         self.create("Fe", 1, True, False)
 
@@ -33,7 +25,6 @@ class Structure():
         except RuntimeError as e:
             return "Error: " + str(e)
         return self.format_structure()
-        # self.structure.
 
     def format_structure(self):
         formated_data = {}
