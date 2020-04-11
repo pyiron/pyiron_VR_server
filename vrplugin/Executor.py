@@ -67,9 +67,10 @@ class Executor():
         # self.get_structure_data(True, True, True)
         # return self.formated_data
 
-    def reset_job(self, newName):
-        Executor.job.remove()
-        self.create_default_job(newName)
+    def reset_job(self, name):
+
+        UnityManager.UnityManager.project.remove_job(name)
+        self.create_default_job(name)
 
 
     """
