@@ -27,13 +27,13 @@ class Executor():
         self.all_temperatures = None
         self.all_elements = None
 
-    def on_calculate_enter(self):
-        if Executor.job is None:
-            print("creating a new job...")
-
-    def create_default_job(self):
+    def create_default_job(self, name):
+        # Initialize the new job as a Lammps with the name of the structure
+        # TODO: initialize it with the name of the structure (e.g. Fe2_md_shifted)
+        if name == "":
+            name = Structure.structure.get_chemical_formula()
         Executor.job = UnityManager.UnityManager.project.create_job(UnityManager.UnityManager.project.job_type.Lammps,
-                                                       Structure.structure.get_chemical_formula())
+                                                       name)
         Executor.job.structure = Structure.structure
         if len(Executor.job.list_potentials()) > 0:
             Executor.job.potential = Executor.job.list_potentials()[0]
@@ -52,10 +52,10 @@ class Executor():
                 # get the temperature with which the ham_lammps was initiated
                 self.temperature = Executor.job.input.control["fix"].split()[4]
 
-    def load_job(self, job):
+    def load_job(self, job, jobName=""):
         if job is None:
             # create a new job
-            self.create_default_job()
+            self.create_default_job(jobName)
             self.initialize_job()
         else:
             Executor.job = job
@@ -66,6 +66,11 @@ class Executor():
         # get the data about the structure, such as the positions and the forces
         # self.get_structure_data(True, True, True)
         # return self.formated_data
+
+    def reset_job(self, newName):
+        Executor.job.remove()
+        self.create_default_job(newName)
+
 
     """
     Receive and handle input from Unity.
@@ -119,7 +124,7 @@ class Executor():
     def prepare_structure(self, job_name, job_type, potential, frame=-1):
 
 
-        temp_base = Executor.job.get_structure(frame)
+        # temp_base = Executor.job.get_structure(frame)
 
         # if job_type == "ham_lammps":
         #     job_type = self.job.job_type.Lammps
@@ -132,8 +137,8 @@ class Executor():
 
         # TODO: use job_name instead. Can be done when Unity deletes the old job before creating the new ones
         # argument snapshot seems to be the frame that should be used to calculate the new lammps
-        Executor.job = self.job.next(job_name="temp_job_" + str(self.job_id))
-        Executor.job.structure = temp_base
+        # Executor.job = self.job.next(job_name="temp_job_" + str(self.job_id))
+        # Executor.job.structure = temp_base
         self.job_id += 1
 
     def run_job(self, is_minimize):
@@ -147,7 +152,8 @@ class Executor():
         if is_minimize:
             Executor.job.structure.center_coordinates_in_unit_cell()
 
-        return self.get_structure_data(True, forces=True)
+        return self.format_job()
+        # return self.get_structure_data(True, forces=True)
 
     # called from Unity
     def calculate_md(self, temperature, n_ionic_steps, n_print, job_type, job_name, potential):
@@ -306,8 +312,7 @@ class Executor():
         else:
             data[name] = generic_par[name]
 
-    def format_job_settings(self):
-        data = {}
+    def format_general_settings(self, data):
         self.set_attribute(data, "calc_mode", "md")
 
         # generic_par = self.get_generic_inp()
@@ -323,55 +328,41 @@ class Executor():
         # data["job_name"] = Structure.structure.get_chemical_formula()
         data["currentPotential"] = Executor.job.potential['Name'].values[0]
         data["potentials"] = list(Executor.job.list_potentials())
-        return Formatter.dict_to_json(data)
-
-    def format_md_settings(self):
-        data = {}
-        self.set_attribute(data, "temperature", 100)
-        self.set_attribute(data, "n_ionic_steps", 1000)
-        self.set_attribute(data, "n_print", 1)
-
-        # generic_par = self.get_generic_inp()
-        # if generic_par is not None:
-        #     # Set default values
-        #     data["temperature"] = 100
-        #     data["n_ionic_steps"] = 100
-        #     data["n_print"] = 1
-        # else:
-        #     data["temperature"] = int(generic_par['temperature'])
-        #     data["n_ionic_steps"] = int(generic_par['n_ionic_steps'])
-        #     data["n_print"] = int(generic_par['n_print'])
-        return data
-
-    def format_minimize_settings(self):
-        data = {}
-        self.set_attribute(data, "f_eps", 1e-8)
-        self.set_attribute(data, "max_iterations", 100000)
-        self.set_attribute(data, "n_print", 100)
-
-        # generic_par = self.get_generic_inp()
-        # if 'f_eps' in generic_par:
-        #     data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
-        # data["max_iterations"] = int(generic_par['max_iter'])
-        # if 'n_print' in generic_par:
-        #     data["n_print"] = int(generic_par['n_print'])
-        #
-        # if 'f_eps' in generic_par:
-        #     data["force_conv"] = float(generic_par['f_eps']) # generic_par['pressure']
-        # data["max_iterations"] = int(generic_par['max_iter'])
-        # if 'n_print' in generic_par:
-        #     data["n_print"] = int(generic_par['n_print'])
         return data
 
     def format_job(self):
-        formated_data = {}
-        formated_data["elements"] = list(Structure.structure.get_chemical_symbols())
+        data ={}
+        data["elements"] = list(Structure.structure.get_chemical_symbols())
+        data["size"] = len(Structure.structure.positions)
+
         positions = Executor.job["output/generic/positions"]
-        formated_data["size"] = len(Structure.structure.positions)
-        formated_data["frames"] = len(positions)
-        formated_data["positions"] = Formatter.array_to_vec3(np.reshape(positions, (-1, 3)))
+        if positions is None:
+            data["frames"] = 1
+            data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
+        else:
+            data["frames"] = len(positions)
+            data["positions"] = Formatter.array_to_vec3(np.reshape(positions, (-1, 3)))
         # formated_data["positions"] = Formatter.array_to_vec3(positions[0])
-        formated_data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        return data
+
+    def format_md_settings(self, data):
+        self.set_attribute(data, "temperature", 100)
+        self.set_attribute(data, "n_ionic_steps", 1000)
+        self.set_attribute(data, "n_print", 1)
+        return data
+
+    def format_minimize_settings(self, data):
+        self.set_attribute(data, "f_eps", 1e-8)
+        self.set_attribute(data, "max_iterations", 100000)
+        self.set_attribute(data, "n_print", 100)
+        return data
+
+    def format_job_settings(self):
+        formated_data = {}
+        formated_data = self.format_general_settings(formated_data)
+        formated_data = self.format_md_settings(formated_data)
+        formated_data = self.format_minimize_settings(formated_data)
         return Formatter.dict_to_json(formated_data)
 
     def format_data(self):

@@ -3,9 +3,9 @@
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
 from pyiron.project import Project
-from Manager import Manager
+# from Manager import Manager
 
-manager = Manager()
+# manager = Manager()
 
 """
 Create a simple job, which gets saved in the save folder. If there is no save folder, it will create it.
