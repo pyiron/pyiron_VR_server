@@ -24,6 +24,8 @@ class Structure():
                 element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
         except RuntimeError as e:
             return "Error: " + str(e)
+        except ValueError as e:
+            return "Error: " + str(e)
         return self.format_structure()
 
     def format_structure(self):

@@ -48,11 +48,6 @@ class EchoServer:
         # pwd = input("Insert the password for the server...")
         print("Waiting for connections with IP Address " + self.ip_addr)
 
-        # TODO: should use the ones from the Manager instead
-        # self.unity_manager = UM.UnityManager()
-        # self.structureManager = Structure.Structure()
-        # self.executor = Executor.Executor()
-
         # a buffer for the received data
         self.data_buffer = ""
 
@@ -111,7 +106,7 @@ class EchoServer:
                                     data = eval(data_new)
                                 except:
                                     traceback.print_exc()
-                                    data = "error: Unknown error during eval"
+                                    data = "error: Invalid Action\nLook at the server log for more information"
 
                             if data is None:
                                 data = "done"
@@ -127,7 +122,8 @@ class EchoServer:
                                     exec(data_new)
                                 except:
                                     traceback.print_exc()
-                                    self.send_data("error: Unknown error during exec", connection)
+                                    self.send_data("error: Invalid Action\nLook at the server log for more information",
+                                                   connection)
                                     break
                             print('exec: done')
 

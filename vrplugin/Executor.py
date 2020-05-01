@@ -148,7 +148,7 @@ class Executor():
         except Exception as e:
             print(e)
             traceback.print_exc()
-            return "error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
+            return "Error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
 
         if is_minimize:
             Executor.job.structure.center_coordinates_in_unit_cell()
@@ -183,7 +183,7 @@ class Executor():
         except Exception as e:
             print(e)
             traceback.print_exc()
-            return "error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
+            return "Error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
 
         if calculation == "minimize":
             Executor.job.structure.center_coordinates_in_unit_cell()
