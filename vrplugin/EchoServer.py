@@ -23,10 +23,9 @@ This script starts a server, which will use pyiron to for physics calculation an
 um_path = os.getcwd()
 print("umpath: " + um_path)
 sys.path.append(um_path)
-import UnityManager as UM
-import Structure
-import Executor
-# import pyiron_mpie.vrplugin.UnityManager as UM
+# import UnityManager as UM
+# import Structure
+# import Executor
 
 BLOCKSIZE = 1024
 # IP Addresses that may connect to the server. Each new computer has to be registered here
@@ -51,86 +50,108 @@ class EchoServer:
         # a buffer for the received data
         self.data_buffer = ""
 
+    # tries to receive some data through the socket. Returns if the socket is still connected
+    def try_receive(self, connection):
+        newData = connection.recv(BLOCKSIZE).decode('ASCII')
+        # check if the client has disconnected
+        if newData == "":
+            print("Client disconnected!")
+            connection.close()
+            self.data_buffer = ""
+            return False
+        self.data_buffer += newData
+        return True
+
+    def receive_next_message(self, connection, unityManager, executor, structure):
+        # if self.checkWhitelist:
+        #     print('Connected by', addr)
+        #     if addr[0] not in WHITELIST:
+        #         print(
+        #             "Address rejected: Add " + str(addr) + " to the Whitelist if it is allowed to connect")
+        #         connection.close()
+        #         continue
+        #     self.checkWhitelist = False
+
+        while True:
+            # Message protocol: len_of_message;messagelen_of_next_message;next_message
+            # Example: 20;exec_l:print("test")
+            # One message will be read per loop
+            while ';' not in self.data_buffer:
+                if not self.try_receive(connection):
+                    return
+            data_split = self.data_buffer.split(';', 1)
+            message_len = int(data_split[0])
+            self.data_buffer = data_split[1]
+
+            while len(self.data_buffer) < message_len:
+                if not self.try_receive(connection):
+                    return
+            data = self.data_buffer[:message_len]
+            # store the data from the next message
+            self.data_buffer = self.data_buffer[message_len:]
+
+            print('data: {}'.format(self.data_buffer))
+            if data.__contains__('end server'):
+                print('server will be stopped')
+                # unity_manager.delete_scratch()
+                # self.t_run = False
+                break
+
+            # for data in data.split('%'):
+            if data == "":
+                continue
+            d_lst = data.split(':')
+            data_new = data
+            if len(d_lst) > 0:
+                data_new = ':'.join(d_lst[1:]).strip()
+
+            if d_lst[0] in ('eval_l', 'eval'):
+                print(d_lst[0], ': {}'.format(data_new))
+                if d_lst[0] == 'eval':
+                    data = unityManager.on_input(data_new)
+                else:
+                    try:
+                        data = eval(data_new)
+                    except:
+                        traceback.print_exc()
+                        data = "error: Invalid Action\nLook at the server log for more information"
+
+                if data is None:
+                    data = "done"
+
+                # report back to Unity of the operation could be evaluated successfully
+                self.send_data(data, connection)
+            elif d_lst[0] in ('exec_l', 'exec'):
+                print('exec: {}'.format(data_new))
+                if d_lst[0] == 'exec':
+                    unityManager.on_input(data_new)
+                else:
+                    try:
+                        exec(data_new)
+                    except:
+                        traceback.print_exc()
+                        self.send_data("error: Invalid Action\nLook at the server log for more information",
+                                       connection)
+                        break
+                print('exec: done')
+
+                # report back to Unity of the operation could be executed successfully
+                self.send_data('done', connection)
+            else:
+                self.send_data('unknown command', connection)
+
     def run_server(self, unityManager, executor, structure):
-        while self.t_run:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind((self.ip_addr, self.PORT))
-                s.listen()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((self.ip_addr, self.PORT))
+            s.listen()
+            while self.t_run:
+                print("Waiting for a client...")
                 connection, addr = s.accept()
+                # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
+                print("Successfully connected! ") #  + connection
                 with connection:
-                    if self.checkWhitelist:
-                        print('Connected by', addr)
-                        if addr[0] not in WHITELIST:
-                            print(
-                                "Address rejected: Add " + str(addr) + " to the Whitelist if it is allowed to connect")
-                            connection.close()
-                            continue
-                        self.checkWhitelist = False
-                    while True:
-                        # Message protocol: len_of_message;messagelen_of_next_message;next_message
-                        # Example: 20;exec_l:print("test")
-                        # One message will be read per loop
-                        while ';' not in self.data_buffer:
-                            self.data_buffer += connection.recv(BLOCKSIZE).decode('ASCII')
-                        data_split = self.data_buffer.split(';', 1)
-                        message_len = int(data_split[0])
-                        self.data_buffer = data_split[1]
+                    self.receive_next_message(connection, unityManager, executor, structure)
 
-                        while len(self.data_buffer) < message_len:
-                            self.data_buffer += connection.recv(BLOCKSIZE).decode('ASCII')
-                        data = self.data_buffer[:message_len]
-                        # store the data from the next message
-                        self.data_buffer = self.data_buffer[message_len:]
-
-                        print('data: {}'.format(self.data_buffer))
-                        if data.__contains__('end server'):
-                            print('server will be stopped')
-                            # unity_manager.delete_scratch()
-                            self.t_run = False
-                            break
-
-                        # for data in data.split('%'):
-                        if data == "":
-                            continue
-                        d_lst = data.split(':')
-                        data_new = data
-                        if len(d_lst) > 0:
-                            data_new = ':'.join(d_lst[1:]).strip()
-
-                        if d_lst[0] in ('eval_l', 'eval'):
-                            print(d_lst[0], ': {}'.format(data_new))
-                            if d_lst[0] == 'eval':
-                                data = unityManager.on_input(data_new)
-                            else:
-                                try:
-                                    data = eval(data_new)
-                                except:
-                                    traceback.print_exc()
-                                    data = "error: Invalid Action\nLook at the server log for more information"
-
-                            if data is None:
-                                data = "done"
-
-                            # report back to Unity of the operation could be evaluated successfully
-                            self.send_data(data, connection)
-                        elif d_lst[0] in ('exec_l', 'exec'):
-                            print('exec: {}'.format(data_new))
-                            if d_lst[0] == 'exec':
-                                unityManager.on_input(data_new)
-                            else:
-                                try:
-                                    exec(data_new)
-                                except:
-                                    traceback.print_exc()
-                                    self.send_data("error: Invalid Action\nLook at the server log for more information",
-                                                   connection)
-                                    break
-                            print('exec: done')
-
-                            # report back to Unity of the operation could be executed successfully
-                            self.send_data('done', connection)
-                        else:
-                            self.send_data('unknown command', connection)
             # t_run = False
 
     def chunk_string(self, string, length):
