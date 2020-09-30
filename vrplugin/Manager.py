@@ -11,6 +11,8 @@ class Manager:
         unityManager = UnityManager()
         executor = Executor()
         structure = Structure()
+        if structure.structure is None:
+            return
         echoServer = EchoServer()
 
         echoServer.run_server(unityManager, executor, structure)

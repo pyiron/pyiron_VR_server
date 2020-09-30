@@ -16,7 +16,9 @@ class Structure():
         return self.format_structure()
 
     def create_default_structure(self):
-        self.create("Fe", 1, True, False)
+        res = self.create("Fe", 1, True, False)
+        if res.startswith("Error: "):
+            print(res)
 
     def create(self, element, repeat, cubic, orthorhombic):
         try:
@@ -29,6 +31,8 @@ class Structure():
         return self.format_structure()
 
     def format_structure(self):
+
+        print("Formatting structure...")
         formated_data = {}
         formated_data["elements"] = list(Structure.structure.get_chemical_symbols())
         formated_data["size"] = len(Structure.structure.positions)

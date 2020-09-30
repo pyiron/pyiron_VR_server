@@ -22,14 +22,12 @@ class UnityManager:
         # self.ProjectExplorer = ProjectExplorer(self)
         # print("abspath: " + os.path.abspath('.'))
         self.startPath = start_path  # os.path.join('.', 'Structures')
-        print("Path in UM: " + self.startPath)
         UnityManager.project = Project(self.startPath)
 
         self.Executor = None
         self.empty = "empty"
         self.is_test = False
         self.test_output = ""
-        print("print UnityManager is ready and waits for input")
 
     # not used when using the server
     def start(self):
