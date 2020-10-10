@@ -27,7 +27,7 @@ sys.path.append(um_path)
 # import Structure
 # import Executor
 
-BLOCKSIZE = 1024
+BLOCKSIZE = 4096
 # IP Addresses that may connect to the server. Each new computer has to be registered here
 WHITELIST = ['192.168.0.198', '192.168.0.196', '127.0.0.1', '192.168.178.152', '130.183.212.66']
 
@@ -142,7 +142,12 @@ class EchoServer:
 
     def run_server(self, unityManager, executor, structure):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((self.ip_addr, self.PORT))
+            try:
+                s.bind((self.ip_addr, self.PORT))
+            except:
+                traceback.print_exc()
+                print("Look at the Troubleshoot section in the Readme for more information")
+                return
             s.listen()
             while self.t_run:
                 print("Waiting for a client...")
