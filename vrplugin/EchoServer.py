@@ -99,7 +99,7 @@ class EchoServer:
         #         continue
         #     self.checkWhitelist = False
 
-        while input_thread.is_alive():
+        while True:
             # Message protocol: len_of_message;messagelen_of_next_message;next_message
             # Example: 20;exec_l:print("test")
             # One message will be read per loop
@@ -174,17 +174,28 @@ class EchoServer:
 
     def run_server(self, unityManager, executor, structure):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(2.0)
             try:
                 s.bind((self.ip_addr, self.PORT))
             except:
                 traceback.print_exc()
                 print("Look at the Troubleshoot section in the Readme for more information")
                 return
+                
             s.listen()
-            # while self.t_run:
-            while input_thread.is_alive():
+            while self.t_run:
+            # while input_thread.is_alive():
+                print("Timeout: ", s.gettimeout())
                 print("Waiting for a client...")
-                connection, addr = s.accept()
+                while True:
+                    try:
+                        connection, addr = s.accept()
+                        break
+                    except socket.timeout:
+                        pass
+
+                    if not input_thread.is_alive():
+                        return
                 # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
                 print("Successfully connected! ") #  + connection
                 with connection:
