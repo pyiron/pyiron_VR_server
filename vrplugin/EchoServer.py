@@ -12,6 +12,8 @@ import os
 import sys
 import traceback
 from pyiron.project import Project
+# import asyncio
+import threading
 
 """
 This script starts a server, which will use pyiron to for physics calculation and send the result to the Unity program.
@@ -30,6 +32,31 @@ sys.path.append(um_path)
 BLOCKSIZE = 4096
 # IP Addresses that may connect to the server. Each new computer has to be registered here
 WHITELIST = ['192.168.0.198', '192.168.0.196', '127.0.0.1', '192.168.178.152', '130.183.212.66']
+
+
+# Needed for asynchronous input
+class KeyboardThread(threading.Thread):
+    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+        self.input_cbk = input_cbk
+        super(KeyboardThread, self).__init__(name=name)
+        self.start()
+
+    def run(self):
+        while True:
+            self.input_cbk(input()) # waits to get input + Return
+
+
+# Gets called when the user enters anything in the command line
+def on_input(inp):
+    # evaluate the keyboard input
+    print('Exiting the server')
+    exit()
+
+
+# start the asynchronous input thread
+print("Press enter to stop the server")
+input_thread = KeyboardThread(on_input)
+
 
 class EchoServer:
     def __init__(self):
@@ -72,7 +99,7 @@ class EchoServer:
         #         continue
         #     self.checkWhitelist = False
 
-        while True:
+        while input_thread.is_alive():
             # Message protocol: len_of_message;messagelen_of_next_message;next_message
             # Example: 20;exec_l:print("test")
             # One message will be read per loop
@@ -140,6 +167,11 @@ class EchoServer:
             else:
                 self.send_data('unknown command', connection)
 
+    # @asyncio.coroutine
+    # def get_cmdline_input(loop):
+    #
+
+
     def run_server(self, unityManager, executor, structure):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
@@ -149,7 +181,8 @@ class EchoServer:
                 print("Look at the Troubleshoot section in the Readme for more information")
                 return
             s.listen()
-            while self.t_run:
+            # while self.t_run:
+            while input_thread.is_alive():
                 print("Waiting for a client...")
                 connection, addr = s.accept()
                 # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
