@@ -120,11 +120,8 @@ class EchoServer:
             print('data: {}'.format(self.data_buffer))
             if data.__contains__('end server'):
                 print('server will be stopped')
-                # unity_manager.delete_scratch()
-                # self.t_run = False
                 break
 
-            # for data in data.split('%'):
             if data == "":
                 continue
             d_lst = data.split(':')
@@ -134,9 +131,6 @@ class EchoServer:
 
             if d_lst[0] == 'eval_l':
                 print(d_lst[0], ': {}'.format(data_new))
-                # if d_lst[0] == 'eval':
-                #     data = unityManager.on_input(data_new)
-                # else:
                 try:
                     data = eval(data_new)
                 except:
@@ -150,9 +144,6 @@ class EchoServer:
                 self.send_data(data, connection)
             elif d_lst[0] == 'exec_l':
                 print('exec: {}'.format(data_new))
-                # if d_lst[0] == 'exec':
-                #     unityManager.on_input(data_new)
-                # else:
                 try:
                     exec(data_new)
                 except:
@@ -179,9 +170,8 @@ class EchoServer:
                 
             s.listen()
             while self.t_run:
-            # while input_thread.is_alive():
-                print("Timeout: ", s.gettimeout())
-                print("Waiting for a client...")
+                print("Stop the server by typing 'stop'")
+                print("Waiting for a client with IP Address " + self.ip_addr)
                 while True:
                     try:
                         connection, addr = s.accept()
@@ -219,7 +209,7 @@ class EchoServer:
         return ip
 
     def send_data(self, data, conn):
-        # numpy arrays an't be serialized, so they have to be converted to  list
+        # numpy arrays can't be serialized, so they have to be converted to  list
         if isinstance(data, np.ndarray):
             data = data.tolist()
         # Unitys JsonUtility can't deserialize primitive data types, so they get send directly
