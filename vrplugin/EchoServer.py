@@ -101,7 +101,7 @@ class EchoServer:
 
         while True:
             # Message protocol: len_of_message;messagelen_of_next_message;next_message
-            # Example: 20;exec_l:print("test")
+            # Example: 20;exec:print("test")
             # One message will be read per loop
             while ';' not in self.data_buffer:
                 if not self.try_receive(connection):
@@ -129,7 +129,7 @@ class EchoServer:
             if len(d_lst) > 0:
                 data_new = ':'.join(d_lst[1:]).strip()
 
-            if d_lst[0] == 'eval_l':
+            if d_lst[0] == 'eval':
                 print(d_lst[0], ': {}'.format(data_new))
                 try:
                     data = eval(data_new)
@@ -142,7 +142,7 @@ class EchoServer:
 
                 # report back to Unity of the operation could be evaluated successfully
                 self.send_data(data, connection)
-            elif d_lst[0] == 'exec_l':
+            elif d_lst[0] == 'exec':
                 print('exec: {}'.format(data_new))
                 try:
                     exec(data_new)
