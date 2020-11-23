@@ -1,6 +1,7 @@
 # coding: utf-8
 # Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
 # Distributed under the terms of "New BSD License", see the LICENSE file.
+
 import os
 import sys
 import time
@@ -21,25 +22,26 @@ class UnityManager:
     def __init__(self, start_path=os.path.join('.', 'Structures')):
         # self.ProjectExplorer = ProjectExplorer(self)
         # print("abspath: " + os.path.abspath('.'))
-        self.startPath = start_path  # os.path.join('.', 'Structures')
-        UnityManager.project = Project(self.startPath)
+        # self.startPath = start_path  # os.path.join('.', 'Structures')
+        # UnityManager.project = Project(self.startPath)
+        UnityManager.project = Project(start_path)
 
-        self.Executor = None
-        self.empty = "empty"
-        self.is_test = False
-        self.test_output = ""
+        # self.Executor = None
+        # self.empty = "empty"
+        # self.is_test = False
+        # self.test_output = ""
 
-    # not used when using the server
-    def start(self):
-        while True:
-            # wait for input from Unity. This is the idle state. When received handle it.
-            out = self.on_input(input())
-
-            # send data to Unity
-            if out is not None:
-                print(out + "\nOrder executed")
-            else:
-                print("Order executed")
+    # not used when using the server, outdated
+    # def start(self):
+    #     while True:
+    #         # wait for input from Unity. This is the idle state. When received handle it.
+    #         out = self.on_input(input())
+    #
+    #         # send data to Unity
+    #         if out is not None:
+    #             print(out + "\nOrder executed")
+    #         else:
+    #             print("Order executed")
 
     """
     Receive data from Unity
@@ -93,7 +95,7 @@ class UnityManager:
     returns the data of the structure.
     """
 
-    # def send_job(self):
+    # def send_job(self): outdated
     #     # self.create_folder_with_job(self.project, "scratch")
     #     # self.Executor = Executor(self, self.project)
     #
@@ -103,15 +105,15 @@ class UnityManager:
     Create the scratch folder which is the workspace and which will be deleted when the program gets stopped.
     """
 
-    def create_folder_with_job(self, job, name):
-        pr = Project(self.startPath)
-        pr.create_group(name)
-        pr = pr[name]
-        pr.remove_jobs(True)
-
-        # todo: has a long loading time (~5s)
-        # TODO: if name already exists, this throws an error. Fixed by try catch, but another solution would be better
-        # self.project = job.copy_to(pr)
+    # def create_folder_with_job(self, job, name): outdated
+    #     pr = Project(self.startPath)
+    #     pr.create_group(name)
+    #     pr = pr[name]
+    #     pr.remove_jobs(True)
+    #
+    #     # todo: has a long loading time (~5s)
+    #     # TODO: if name already exists, this throws an error. Fixed by try catch, but another solution would be better
+    #     # self.project = job.copy_to(pr)
 
 
 # if __name__ == '__main__': outdated

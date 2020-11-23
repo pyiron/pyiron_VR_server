@@ -1,3 +1,7 @@
+# coding: utf-8
+# Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
+# Distributed under the terms of "New BSD License", see the LICENSE file.
+
 import UnityManager
 import Executor
 import Formatter
@@ -6,7 +10,7 @@ import json
 import numpy
 
 
-class Structure():
+class Structure:
     structure = None
 
     def __init__(self):
@@ -33,13 +37,11 @@ class Structure():
     def format_structure(self):
 
         print("Formatting structure...")
-        formated_data = {}
-        formated_data["elements"] = list(Structure.structure.get_chemical_symbols())
-        formated_data["size"] = len(Structure.structure.positions)
-        formated_data["frames"] = 1
-        formated_data["formula"] = Structure.structure.get_chemical_formula()
-        formated_data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
-        formated_data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        formated_data = {"elements": list(Structure.structure.get_chemical_symbols()),
+                         "size": len(Structure.structure.positions), "frames": 1,
+                         "formula": Structure.structure.get_chemical_formula(),
+                         "positions": Formatter.array_to_vec3(Structure.structure.positions),
+                         "cell": Formatter.array_to_vec3(Structure.structure.cell)}
         return Formatter.dict_to_json(formated_data)
 
 
