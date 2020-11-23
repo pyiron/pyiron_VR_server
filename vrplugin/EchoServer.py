@@ -48,13 +48,13 @@ class KeyboardThread(threading.Thread):
 
 # Gets called when the user enters anything in the command line
 def on_input(inp):
-    # evaluate the keyboard input
+    # The server will stop when no client is connected
     print('Exiting the server')
     exit()
 
 
-# start the asynchronous input thread
 print("Press enter to stop the server")
+# start the asynchronous input thread
 input_thread = KeyboardThread(on_input)
 
 
@@ -132,45 +132,40 @@ class EchoServer:
             if len(d_lst) > 0:
                 data_new = ':'.join(d_lst[1:]).strip()
 
-            if d_lst[0] in ('eval_l', 'eval'):
+            if d_lst[0] == 'eval_l':
                 print(d_lst[0], ': {}'.format(data_new))
-                if d_lst[0] == 'eval':
-                    data = unityManager.on_input(data_new)
-                else:
-                    try:
-                        data = eval(data_new)
-                    except:
-                        traceback.print_exc()
-                        data = "error: Invalid Action\nLook at the server log for more information"
+                # if d_lst[0] == 'eval':
+                #     data = unityManager.on_input(data_new)
+                # else:
+                try:
+                    data = eval(data_new)
+                except:
+                    traceback.print_exc()
+                    data = "error: Invalid Action\nLook at the server log for more information"
 
                 if data is None:
                     data = "done"
 
                 # report back to Unity of the operation could be evaluated successfully
                 self.send_data(data, connection)
-            elif d_lst[0] in ('exec_l', 'exec'):
+            elif d_lst[0] == 'exec_l':
                 print('exec: {}'.format(data_new))
-                if d_lst[0] == 'exec':
-                    unityManager.on_input(data_new)
-                else:
-                    try:
-                        exec(data_new)
-                    except:
-                        traceback.print_exc()
-                        self.send_data("error: Invalid Action\nLook at the server log for more information",
-                                       connection)
-                        break
+                # if d_lst[0] == 'exec':
+                #     unityManager.on_input(data_new)
+                # else:
+                try:
+                    exec(data_new)
+                except:
+                    traceback.print_exc()
+                    self.send_data("error: Invalid Action\nLook at the server log for more information",
+                                   connection)
+                    break
                 print('exec: done')
 
                 # report back to Unity of the operation could be executed successfully
                 self.send_data('done', connection)
             else:
                 self.send_data('unknown command', connection)
-
-    # @asyncio.coroutine
-    # def get_cmdline_input(loop):
-    #
-
 
     def run_server(self, unityManager, executor, structure):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

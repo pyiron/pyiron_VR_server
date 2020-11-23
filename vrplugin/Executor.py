@@ -13,7 +13,7 @@ class Executor():
     job = None
 
     def __init__(self):
-        # needed so that each new created job has a unique name
+        # needed so that each new created job has a unique name. TODO: might be outdated
         self.job_id = 0
 
         # the current frame. Should be send before an order gets executed
@@ -77,52 +77,52 @@ class Executor():
     Receive and handle input from Unity.
     """
 
-    def on_input(self, type, val, is_test=False):
-        if type not in ("exec", "eval"):
-            return "print Unknown type " + type
-        self.frame = int(val.split()[0])
-        val = val[len(str(self.frame)) + 1:]
-        # execute the new order
-        if type == "eval":
-            val = eval(val)
-        else:
-            exec(val)
-            val = None
-        return val
+    # def on_input(self, type, val, is_test=False):
+    #     if type not in ("exec", "eval"):
+    #         return "print Unknown type " + type
+    #     self.frame = int(val.split()[0])
+    #     val = val[len(str(self.frame)) + 1:]
+    #     # execute the new order
+    #     if type == "eval":
+    #         val = eval(val)
+    #     else:
+    #         exec(val)
+    #         val = None
+    #     return val
 
-    # called from Unity
-    def send_all_forces(self):
-        if self.all_forces is not None:
-            forces = ""
-            for atom_id in range(len(self.all_forces[self.frame])):
-                new_forces = ""
-                for i in range(3):
-                    new_forces += " " + str(self.round_value(self.all_forces[self.frame][atom_id][i]))
-                forces += "force{} {}%".format(new_forces, str(atom_id))
-            forces = forces[:-1]
-            res = forces
-        else:
-            res = "force empty"
-        return res
+    # # called from Unity
+    # def send_all_forces(self):
+    #     if self.all_forces is not None:
+    #         forces = ""
+    #         for atom_id in range(len(self.all_forces[self.frame])):
+    #             new_forces = ""
+    #             for i in range(3):
+    #                 new_forces += " " + str(self.round_value(self.all_forces[self.frame][atom_id][i]))
+    #             forces += "force{} {}%".format(new_forces, str(atom_id))
+    #         forces = forces[:-1]
+    #         res = forces
+    #     else:
+    #         res = "force empty"
+    #     return res
 
-    # called from Unity
-    def set_temperature(self, tmp):
-        self.temperature = tmp
+    # # called from Unity
+    # def set_temperature(self, tmp):
+    #     self.temperature = tmp
 
-    # called from Unity
+    # called from Unity, currently not used
     def set_new_base_position(self, data):
         # data = "x y z atom_id"
         # set the atom with id atom_id to the defined new positions
         for i in range(3):
             Executor.job.structure.positions[int(data.split()[3]), i] = float(data.split()[i])
 
-    # called from Unity
+    # called from Unity, currently not used
     def destroy_atom(self, atom_id):
         # destroy an atom out of the basis. When creating the new lammps, the basis will be transmitted
         del Executor.job.structure[atom_id]
         self.get_structure_data(forces=True, shouldFormat=False)
 
-    def prepare_structure(self, job_name, job_type, potential, frame=-1):
+    def prepare_structure(self, job_name, job_type, potential, frame=-1): # TODO: might be outdated
 
 
         # temp_base = Executor.job.get_structure(frame)
@@ -169,31 +169,31 @@ class Executor():
         Executor.job.calc_minimize(f_tol=force_conv, max_iter=max_iterations, n_print=n_print)
         return self.run_job(False)
 
-    # called from Unity, TODO: outdated but might still be in use
-    def create_new_lammps(self, calculation, temperature=10, n_ionic_steps=100, n_print=1):
-        self.prepare_structure("")
+    # # called from Unity, outdated
+    # def create_new_lammps(self, calculation, temperature=10, n_ionic_steps=100, n_print=1):
+    #     self.prepare_structure("")
+    #
+    #     if calculation == "md":
+    #         Executor.job.calc_md(temperature=temperature, n_ionic_steps=n_ionic_steps, n_print=n_print)
+    #     else:
+    #         Executor.job.calc_minimize(n_print=n_print)
+    #
+    #     try:
+    #         Executor.job.run()
+    #     except Exception as e:
+    #         print(e)
+    #         traceback.print_exc()
+    #         return "Error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
+    #
+    #     if calculation == "minimize":
+    #         Executor.job.structure.center_coordinates_in_unit_cell()
+    #
+    #     # if eval("self.run_" + calculation + "(" + n_ionic_steps)") == -1:
+    #     #     return "error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
+    #     # self.all_positions = self.job['output/generic/positions']
+    #     return self.get_structure_data(True, forces=True)
 
-        if calculation == "md":
-            Executor.job.calc_md(temperature=temperature, n_ionic_steps=n_ionic_steps, n_print=n_print)
-        else:
-            Executor.job.calc_minimize(n_print=n_print)
-
-        try:
-            Executor.job.run()
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            return "Error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
-
-        if calculation == "minimize":
-            Executor.job.structure.center_coordinates_in_unit_cell()
-
-        # if eval("self.run_" + calculation + "(" + n_ionic_steps)") == -1:
-        #     return "error: Check that all atoms have enough distance to each other. Mind periodic boundaries!"
-        # self.all_positions = self.job['output/generic/positions']
-        return self.get_structure_data(True, forces=True)
-
-    # def run_md(self):
+    # def run_md(self): # outdated
     #     self.pr.calc_md(temperature=self.temperature, n_print=1, n_ionic_steps=self.n_ionic_steps)
     #     # self.job.server.run_mode.non_modal=True
     #     try:
@@ -205,7 +205,7 @@ class Executor():
     #     return 0
     #     # self.job.project.wait_for_job(self.job)
     #
-    # def run_minimize(self):
+    # def run_minimize(self): # outdated
     #     self.pr.calc_minimize(n_print=1)
     #     try:
     #         self.pr.run()
@@ -216,25 +216,25 @@ class Executor():
     #     self.pr.structure.center_coordinates_in_unit_cell()
     #     return 0
 
-    # called from Unity
+    # called from Unity, currently not in use
     def add_new_atom(self, element):
         # todo: find a good position for the new atom
         Executor.job.structure += Executor.job.project.create_atoms([element], [(2, 0, 0)])
         # self.pr.structure.set_absolute()
         return self.get_structure_data()
 
-    # called from Unity
+    # called from Unity, outdated
     # TODO: frame is not needed anymore and should be removed, but therefore it has to be removed on the Unity side too
-    def create_new_struc(self, frame, elm, cubic):
-        # self.frame = frame
-        # TODO: show possible Arguments of create_ase_bulk in Unity and use the input
-        bulk = Executor.job.project.create_ase_bulk(name=elm, cubic=cubic)
-        bulk.positions[0, 0] += 2
-        bulk.positions[1, 0] += 4
-        # self.pr.structure = self.pr.get_structure(self.frame)
-        Executor.job.structure += bulk
-        # self.pr.structure.set_absolute()
-        return self.get_structure_data(forces=True)
+    # def create_new_struc(self, frame, elm, cubic):
+    #     # self.frame = frame
+    #     # TODO: show possible Arguments of create_ase_bulk in Unity and use the input
+    #     bulk = Executor.job.project.create_ase_bulk(name=elm, cubic=cubic)
+    #     bulk.positions[0, 0] += 2
+    #     bulk.positions[1, 0] += 4
+    #     # self.pr.structure = self.pr.get_structure(self.frame)
+    #     Executor.job.structure += bulk
+    #     # self.pr.structure.set_absolute()
+    #     return self.get_structure_data(forces=True)
 
     # not fully implemented, might not be implemented at all
     def send_args_create_ase_bulk(self):
@@ -332,9 +332,8 @@ class Executor():
         return data
 
     def format_job(self):
-        data ={}
-        data["elements"] = list(Structure.structure.get_chemical_symbols())
-        data["size"] = len(Structure.structure.positions)
+        data = {"elements": list(Structure.structure.get_chemical_symbols()),
+                "size": len(Structure.structure.positions)}
 
         positions = Executor.job["output/generic/positions"]
         if positions is None:
@@ -366,7 +365,7 @@ class Executor():
         formated_data = self.format_minimize_settings(formated_data)
         return Formatter.dict_to_json(formated_data)
 
-    def format_data(self):
+    def format_data(self): #outdated
         # if self.temporaryBasis:  # not sure if this is needed
         #     self.frame = 0
 
@@ -379,7 +378,7 @@ class Executor():
         # remove the last '%' to show this was the last frame
         self.formated_data = self.formated_data[:-1]
 
-    def format_first_line(self, frame):
+    def format_first_line(self, frame): #outdated
         size = str(len(self.all_positions[frame]))
 
         if self.firstSend:
@@ -392,7 +391,7 @@ class Executor():
 
         self.formated_data += "SDS {} {} {} {}%".format(size, temperature, frame, anim_frames)
 
-    def format_main_part(self, frame=0):
+    def format_main_part(self, frame=0): #outdated
         positions = self.get_atom_positions(frame)
 
         # elements = self.pr.get_structure(self.frame).get_chemical_symbols()
@@ -403,7 +402,7 @@ class Executor():
             self.formated_data += "SDM {} {} {} {}%".format(position[0], position[1], position[2],
                                                                          self.all_elements[atomNr])
 
-    def format_last_line(self, frame):
+    def format_last_line(self, frame): #outdated
         self.formated_data += "SDE "
         cell = self.all_cells[frame]
         for ci in cell.flatten():
@@ -415,7 +414,8 @@ class Executor():
         return "{0:.4g}".format(position)
 
 
-"""self.set_new_base_position('x y z atomNr, frame') - set x, y and z koordinate for the atom with id atomNr in the
+""" mainly outdated:
+self.set_new_base_position('x y z atomNr, frame') - set x, y and z koordinate for the atom with id atomNr in the
     given frame" 
 self.calculate('md || minimize', frame) - calculate ham_lammps for the given structure in the given frame.
     Write md or minimze to choose which calculation should be done" 
