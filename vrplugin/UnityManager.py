@@ -45,48 +45,48 @@ class UnityManager:
     Receive data from Unity
     """
 
-    def on_input(self, complete_order):
-        try:
-            if complete_order == "stop":
-                self.delete_scratch()
-                sys.exit()
-            elif complete_order == "return":
-                self.delete_scratch()
-                return None
+    # def on_input(self, complete_order): outdated
+    #     try:
+    #         if complete_order == "stop":
+    #             self.delete_scratch()
+    #             sys.exit()
+    #         elif complete_order == "return":
+    #             self.delete_scratch()
+    #             return None
+    #
+    #         if len(complete_order.split()) < 3:
+    #             return "print At least 3 Arguments are needed"
+    #
+    #         receiver = complete_order.split()[0]
+    #         of_type = complete_order.split()[1]
+    #         order = complete_order[len(receiver) + len(of_type) + 2:]
+    #
+    #         res = ""
+    #         if receiver == 'Executor':
+    #             res = self.Executor.on_input(of_type, order)
+    #         elif receiver == "None":
+    #             if of_type == 'exec':
+    #                 exec(order)
+    #             elif of_type == 'eval':
+    #                 res = eval(order)
+    #                 return res
+    #             else:
+    #                 res = "print Unknown type " + of_type
+    #         else:
+    #             res = "print Unknown script to send message to"
+    #     except Exception as e:
+    #         print(e)
+    #         traceback.print_exc()
+    #         return "error: Unknown error. Look at the output log of the server for more information."
+    #     return res
 
-            if len(complete_order.split()) < 3:
-                return "print At least 3 Arguments are needed"
-
-            receiver = complete_order.split()[0]
-            of_type = complete_order.split()[1]
-            order = complete_order[len(receiver) + len(of_type) + 2:]
-
-            res = ""
-            if receiver == 'Executor':
-                res = self.Executor.on_input(of_type, order)
-            elif receiver == "None":
-                if of_type == 'exec':
-                    exec(order)
-                elif of_type == 'eval':
-                    res = eval(order)
-                    return res
-                else:
-                    res = "print Unknown type " + of_type
-            else:
-                res = "print Unknown script to send message to"
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            return "error: Unknown error. Look at the output log of the server for more information."
-        return res
-
-    def delete_scratch(self):
-        if self.Executor is not None:
-            # pr = self.Executor.pr.project
-            if "save" not in UnityManager.project.path:
-                UnityManager.project.remove_jobs(True)
-                UnityManager.project = UnityManager.project[".."]
-                UnityManager.project.removedirs("scratch")
+    # def delete_scratch(self): outdated
+    #     if self.Executor is not None:
+    #         # pr = self.Executor.pr.project
+    #         if "save" not in UnityManager.project.path:
+    #             UnityManager.project.remove_jobs(True)
+    #             UnityManager.project = UnityManager.project[".."]
+    #             UnityManager.project.removedirs("scratch")
 
     """
     Called from the Unity program. Creates a new Folder in which the structure gets edited, loads the structure and 
@@ -114,8 +114,8 @@ class UnityManager:
         # self.project = job.copy_to(pr)
 
 
-if __name__ == '__main__':
-    UnityManager().start()
+# if __name__ == '__main__': outdated
+#     UnityManager().start()
 
 # ProjectExplorer pr_input save
 # ProjectExplorer pr_input ham_lammps
