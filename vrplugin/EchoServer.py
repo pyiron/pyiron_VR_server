@@ -190,7 +190,7 @@ class EchoServer:
                 while True:
                     try:
                         connection, addr = s.accept()
-                        break
+                        break # TODO: comment this line in, as it crashes both programs!
                     except socket.timeout:
                         pass
 
