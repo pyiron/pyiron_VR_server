@@ -64,17 +64,33 @@ class Executor:
         return self.format_job()
 
     # called from Unity
-    def calculate_md(self, temperature, n_ionic_steps, n_print, job_type, job_name, potential):
-        # self.prepare_structure(job_name, job_type, potential) outdated
-        Executor.job.calc_md(temperature=temperature, n_ionic_steps=n_ionic_steps, n_print=n_print)
+    def calculate(self, data):
+        print("Received data: " + data)
+        if data["calc_type"] is "md":
+            Executor.job.calc_md(temperature=data["temperature"], n_ionic_steps=data["n_ionic_steps"],
+                                 n_print=data["n_print"])
+        elif data["calc_type"] is "minimize":
+            # f_eps might be the wrong attribute, but f_tol seems even more wrong
+            # Executor.job.calc_minimize(f_tol=data["force_conv"], max_iter=data["max_iterations"],
+            #                             n_print=data["n_print"])
+            Executor.job.calc_minimize(f_eps=data["f_eps"], max_iter=data["max_iterations"],
+                                       n_print=data["n_print"])
+        else:
+            print("Unsupported calculation type: ", data["calc_type"])
         return self.run_job(False)
 
-    # called from Unity
-    def calculate_minimize(self, force_conv, max_iterations, n_print, job_type, job_name, potential):
-        # self.prepare_structure(job_name, job_type, potential) outdated
-        # f_tol might be the wrong attribute
-        Executor.job.calc_minimize(f_tol=force_conv, max_iter=max_iterations, n_print=n_print)
-        return self.run_job(False)
+    # # called from Unity
+    # def calculate_md(self, temperature, n_ionic_steps, n_print, job_type, job_name, currentPotential):
+    #     # self.prepare_structure(job_name, job_type, potential) outdated
+    #     Executor.job.calc_md(temperature=temperature, n_ionic_steps=n_ionic_steps, n_print=n_print)
+    #     return self.run_job(False)
+    #
+    # # called from Unity
+    # def calculate_minimize(self, force_conv, max_iterations, n_print, job_type, job_name, currentPotential):
+    #     # self.prepare_structure(job_name, job_type, potential) outdated
+    #     # f_tol might be the wrong attribute
+    #     Executor.job.calc_minimize(f_tol=force_conv, max_iter=max_iterations, n_print=n_print)
+    #     return self.run_job(False)
 
     # # called from Unity, currently not in use, last line is outdated
     # def add_new_atom(self, element):
