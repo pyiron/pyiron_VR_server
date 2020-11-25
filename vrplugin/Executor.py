@@ -63,8 +63,31 @@ class Executor:
 
         return self.format_job()
 
+    # def prepare_structure(self, job_name, job_type, potential, frame=-1): # outdated
+    #
+    #
+    #     # temp_base = Executor.job.get_structure(frame)
+    #
+    #     # if job_type == "ham_lammps":
+    #     #     job_type = self.job.job_type.Lammps
+    #     # else:
+    #     #     job_type = self.job.job_type.Vasp
+    #     # self.job = self.job.create_job(job_type, job_name)
+    #     # self.job.structure = temp_base
+    #     # self.job.potential = potential
+    #
+    #
+    #     # !: use job_name instead. Can be done when Unity deletes the old job before creating the new ones
+    #     # argument snapshot seems to be the frame that should be used to calculate the new lammps
+    #     # Executor.job = self.job.next(job_name="temp_job_" + str(self.job_id))
+    #     # Executor.job.structure = temp_base
+    #     self.job_id += 1
+
     # called from Unity
     def calculate(self, data):
+        if "currentPotential" in data.keys():
+            self.job.potential = data["currentPotential"]
+
         # print("Received data: " + data)
         if data["calc_type"] is "md":
             Executor.job.calc_md(temperature=data["temperature"], n_ionic_steps=data["n_ionic_steps"],
