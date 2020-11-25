@@ -65,7 +65,7 @@ class Executor:
 
     # called from Unity
     def calculate(self, data):
-        print("Received data: " + data)
+        # print("Received data: " + data)
         if data["calc_type"] is "md":
             Executor.job.calc_md(temperature=data["temperature"], n_ionic_steps=data["n_ionic_steps"],
                                  n_print=data["n_print"])

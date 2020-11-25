@@ -170,7 +170,7 @@ class EchoServer:
                 
             s.listen()
             while self.t_run:
-                print("Stop the server by typing 'stop'")
+                print("Stop the server by pressing the Enter Key")
                 print("Waiting for a client with IP Address " + self.ip_addr)
                 while True:
                     try:
