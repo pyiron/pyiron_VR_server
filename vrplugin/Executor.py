@@ -158,7 +158,7 @@ class Executor:
             data[name] = generic_inp[name]
 
     def format_general_settings(self, data, generic_inp):
-        self.set_attribute(data, "calc_mode", "md", generic_inp)
+        self.set_attribute(data, "calc_type", "md", generic_inp)
 
         if Executor.job["TYPE"] is None:
             data["job_type"] = "lammps"

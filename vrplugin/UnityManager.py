@@ -4,7 +4,7 @@
 
 import os
 import sys
-from pyiron.project import Project
+from pyiron import Project
 
 # get the path to this script C:\Users\<usr>\...\vrplugin\pyiron_mpie\vrplugin\pyiron_mpie\vrplugin
 # remove \pyiron_mpie\vrplugin
@@ -21,3 +21,15 @@ class UnityManager:
     def __init__(self, start_path=os.path.join('.', 'Structures')):
         UnityManager.project = Project(start_path)
 
+    def GetJobSizes(self):
+        sizes = []
+        for name in UnityManager.project.list_all()['nodes']:
+            positions = UnityManager.project[name + "/output/generic/positions"]
+            if positions is None:
+                l = 0
+            else:
+                l = len(positions)
+                if l > 0:
+                    l *= len(positions[0])
+            sizes.append(l)
+        return {"jobSizes": sizes}
