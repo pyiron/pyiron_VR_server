@@ -174,6 +174,7 @@ class Executor:
                 "size": len(Structure.structure.positions)}
 
         positions = Executor.job["output/generic/positions"]
+        data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
         if positions is None:
             data["frames"] = 1
             data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
@@ -181,7 +182,6 @@ class Executor:
             data["frames"] = len(positions)
             data["positions"] = Formatter.array_to_vec3(np.reshape(positions, (-1, 3)))
         # formated_data["positions"] = Formatter.array_to_vec3(positions[0])
-        data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
         return data
 
     def format_md_settings(self, data, generic_inp):
