@@ -213,17 +213,52 @@ class EchoServer:
         if isinstance(data, np.ndarray):
             data = data.tolist()
         # Unitys JsonUtility can't deserialize primitive data types, so they get send directly
+        bin_data = None
         if type(data) == str or type(data) == int or type(data) == float or type(data) == bool:
             my_data = str(data)
         else:
-            my_data = json.dumps(data)
+            if "positions" in data:
+            #    print(type(data["positions"]))
+            #    # np_data = np.array(data)
+            #    print("np type", type(data["positions"]))
+                # test_data = data.copy()
+                # myList = []
+                # test_positions = data["positions"].copy()
+                # test_positions = np.reshape(test_positions, (-1, 3))
+                # test_positions = np.float32(test_positions)
+                # for elm in test_positions:
+                #     myList.append({"x": elm[0], "y": elm[1], "z": elm[2]})
+                # test_data["positions"] = myList
+                # print(str(test_data)[:2000])
+                # print("len before ", len(str(test_data)))
+                # print("as string ", len(str(test_data).encode('ASCII')))
+                bin_data = data["positions"].flatten()
+                # del data["elements"]
+            #   print("bintype", type(bin_data))
+                del data["positions"]
+                # data["positions"] = len(data["positions"])
+            #    print("Test success")
+            my_data = json.dumps(data, separators=(',', ':'))
         data_lst = self.chunk_string(my_data, BLOCKSIZE)
+        num_bytes = (len(my_data)).to_bytes(4, byteorder='little', signed=True)
+        conn.sendall(num_bytes)
+        # print(num_bytes)
         num_str = "" + str(len(my_data)) + ";"
 
         # send the length of the message, then the message itself
-        conn.sendall(num_str.encode('ASCII'))
+        # conn.sendall(num_str.encode('ASCII'))
         for block in data_lst:
             conn.sendall(block.encode('ASCII'))
+
+        if bin_data is not None:
+            arr_size = BLOCKSIZE // 4
+            # print("lenn ", len(bin_data.tobytes()))
+            bin_data = np.float32(bin_data)
+            # print("len ", len(bin_data.tobytes()))
+            bin_data = bin_data.tobytes()
+            conn.sendall(bin_data)
+            #for i in range((len(bin_data) + BLOCKSIZE - 1) // BLOCKSIZE):
+            #    conn.sendall(bin_data[i * arr_size:min(len(bin_data), (i + 1) * BLOCKSIZE)])
 
         # show the first 100 characters of the send message for debug purposes
         if len(my_data) > 100:

@@ -40,8 +40,8 @@ class Structure:
         formated_data = {"elements": list(Structure.structure.get_chemical_symbols()),
                          "size": len(Structure.structure.positions), "frames": 1,
                          "formula": Structure.structure.get_chemical_formula(),
-                         "positions": Formatter.array_to_vec3(Structure.structure.positions),
-                         "cell": Formatter.array_to_vec3(Structure.structure.cell)}
+                         "cell": Formatter.array_to_vec3(Structure.structure.cell),
+                         "positions": Formatter.array_to_vec3(Structure.structure.positions)}
         return Formatter.dict_to_json(formated_data)
 
 
