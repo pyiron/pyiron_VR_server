@@ -177,8 +177,8 @@ class Executor:
         data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
         if positions is None:
             data["frames"] = 1
-            # data["positions"] = Structure.structure.positions
-            data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
+            data["positions"] = Structure.structure.positions
+            # data["positions"] = Formatter.array_to_vec3(Structure.structure.positions)
         else:
             data["frames"] = len(positions)
             data["positions"] = positions
