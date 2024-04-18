@@ -2,7 +2,7 @@
 # Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
-from pyiron.project import Project
+from pyiron_atomistics import Project
 # from Manager import Manager
 
 # manager = Manager()
@@ -31,7 +31,6 @@ for i in range(len(strucs)):
 
     ham_lammps = pr.create_job(pr.job_type.Lammps, 'ham_lammps_' + strucs[i])
     ham_lammps.structure = basis
-    ham_lammps.potential = 'Fe_C_Becquart_eam'
 
     if strucs[i] == "minimize":
         ham_lammps.calc_minimize(n_print=1)
