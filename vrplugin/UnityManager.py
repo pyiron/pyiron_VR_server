@@ -4,7 +4,7 @@
 
 import os
 import sys
-from pyiron import Project
+from pyiron_atomistics import Project
 
 # get the path to this script C:\Users\<usr>\...\vrplugin\pyiron_mpie\vrplugin\pyiron_mpie\vrplugin
 # remove \pyiron_mpie\vrplugin
