@@ -7,6 +7,9 @@ import UnityManager
 from Structure import Structure
 import Formatter
 import numpy as np
+from pyiron_atomistics.atomistics.job.structurecontainer import StructureContainer
+from pyiron import Project
+
 
 
 class Executor:
@@ -169,8 +172,65 @@ class Executor:
         data["currentPotential"] = Executor.job.potential['Name'].values[0]
         data["potentials"] = list(Executor.job.list_potentials())
         return data
+    
+    @staticmethod
+    def _get_max_sum_formular(structure_container):
+        result = {}
+        for s in structure_container.iter_structures():
+            for atom_t, n_atoms_of_t in s.get_number_species_atoms().items():
+                if atom_t not in result:
+                    result[atom_t] = n_atoms_of_t
+                elif n_atoms_of_t > result[atom_t]:
+                    result[atom_t] = n_atoms_of_t
+        return result
+
+    @staticmethod
+    def _fill_atoms(structure, atom_type, n_add_atom_type, at_position=None):
+        symbol_list = list(structure.symbols)
+        atom_t_idx = symbol_list.index(atom_type) if atom_type in symbol_list else 0
+        atom = structure[atom_t_idx]
+        structure += atom
+        if structure[-1].symbol != atom_type:
+            structure[-1] = atom_type
+        repl_atom = structure[-1]
+        if at_position is not None:
+            repl_atom.position = at_position
+        for i in range(n_add_atom_type - 1):
+            structure += repl_atom
+    
+    def _padd_structure(self, structure, max_sum_formular):
+        result = structure.copy()
+        s_info = structure.get_number_species_atoms()
+        for atom_t in max_sum_formular:
+            if atom_t in s_info:
+                if s_info[atom_t] < max_sum_formular[atom_t]:
+                    self._fill_atoms(result, atom_t, max_sum_formular[atom_t] - s_info[atom_t])
+            else:
+                self._fill_atoms(result, atom_t, max_sum_formular[atom_t], at_position=[-1000, -1000, -1000])
+        return result
+                
+    def _padded_structure_container(self, structure_container):
+        pr = Project('.')
+        scj = pr.create.job.StructureContainer('_tmp_never_saved')
+        max_sum_formular = self._get_max_sum_formular(structure_container)
+        for s in structure_container.iter_structures():
+            scj.add_structure(self._padd_structure(s, max_sum_formular))
+        return scj._container
+
+    def _data_from_structurecontainer(self, job):
+        j_container = self._padded_structure_container(job)
+        return {
+            "elements": list(j_container.get_array_filled('symbols')[0]),
+            "size": j_container.length[0],
+            "cell": j_container.cell[0],
+            "frames": j_container.number_of_structures,
+            "positions": j_container.get_array_filled('positions')
+        }
 
     def format_job(self):
+        if isinstance(Executor.job, StructureContainer):
+            return self._data_from_structurecontainer(Executor.job)
+
         data = {"elements": list(Structure.structure.get_chemical_symbols()),
                 "size": len(Structure.structure.positions)}
 
