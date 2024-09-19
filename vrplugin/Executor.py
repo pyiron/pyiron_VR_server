@@ -222,7 +222,7 @@ class Executor:
         return {
             "elements": list(j_container.get_array_filled('symbols')[0]),
             "size": j_container.length[0],
-            "cell": j_container.cell[0],
+            "cell": Formatter.array_to_vec3(j_container.cell[0]),
             "frames": j_container.number_of_structures,
             "positions": j_container.get_array_filled('positions')
         }
