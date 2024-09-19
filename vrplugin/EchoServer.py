@@ -66,6 +66,7 @@ class EchoServer:
 
         # set to true if the connection should be restricted to localhost
         self.useLocalhost = False
+        self.useLocalhost = True
 
         self.t_run = True
         self.checkWhitelist = False  # set to True to use Whitelist

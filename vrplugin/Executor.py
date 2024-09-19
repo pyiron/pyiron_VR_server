@@ -96,7 +96,8 @@ class Executor:
             # f_eps might be the wrong attribute, but f_tol seems even more wrong
             # Executor.job.calc_minimize(f_tol=data["force_conv"], max_iter=data["max_iterations"],
             #                             n_print=data["n_print"])
-            Executor.job.calc_minimize(f_eps=data["f_eps"], max_iter=data["max_iterations"],
+            ionic_energy_tolerance = float(data["f_eps"]) 
+            Executor.job.calc_minimize(ionic_energy_tolerance=ionic_energy_tolerance, max_iter=data["max_iterations"],
                                        n_print=data["n_print"])
         else:
             print("Unsupported calculation type: ", data["calc_type"])
