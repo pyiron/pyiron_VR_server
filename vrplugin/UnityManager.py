@@ -24,7 +24,7 @@ class UnityManager:
     def GetJobSizes(self):
         sizes = []
         for name in UnityManager.project.list_all()['nodes']:
-            if pr_strucute_container['t/OBJECT'] == 'StructureContainer':
+            if UnityManager.project[name +'/OBJECT'] == 'StructureContainer':
                 l = UnityManager.project[name + "/structures/chunk_arrays/length"].max()
             else:
                 positions = UnityManager.project[name + "/output/generic/positions"]
