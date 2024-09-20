@@ -26,7 +26,7 @@ class Structure:
 
     def create(self, element, repeat, cubic, orthorhombic):
         try:
-            Structure.structure = UnityManager.UnityManager.project.create_ase_bulk(
+            Structure.structure = UnityManager.UnityManager.project.create.structure.ase.bulk(
                 element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
         except RuntimeError as e:
             return "Error: " + str(e)
@@ -35,7 +35,6 @@ class Structure:
         return self.format_structure()
 
     def format_structure(self):
-
         print("Formatting structure...")
         formated_data = {"elements": list(Structure.structure.get_chemical_symbols()),
                          "size": len(Structure.structure.positions), "frames": 1,

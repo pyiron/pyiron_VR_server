@@ -29,6 +29,7 @@ class UnityManager:
                 l = 0
             else:
                 l = len(positions)
+                #  ToDo: Assumes uniform trajectory!
                 if l > 0:
                     l *= len(positions[0])
             sizes.append(l)

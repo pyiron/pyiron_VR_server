@@ -17,8 +17,7 @@ class Executor:
         # TODO: initialize it with the name of the structure (e.g. Fe2_md_shifted)
         if name == "":
             name = Structure.structure.get_chemical_formula()
-        Executor.job = UnityManager.UnityManager.project.create_job(UnityManager.UnityManager.project.job_type.Lammps,
-                                                       name)
+        Executor.job = UnityManager.UnityManager.project.create.job.Lammps(name)
         Executor.job.structure = Structure.structure
         if len(Executor.job.list_potentials()) > 0:
             Executor.job.potential = Executor.job.list_potentials()[0]

@@ -36,14 +36,14 @@ WHITELIST = ['192.168.0.198', '192.168.0.196', '127.0.0.1', '192.168.178.152', '
 
 # Needed for asynchronous input
 class KeyboardThread(threading.Thread):
-    def __init__(self, input_cbk = None, name='keyboard-input-thread'):
+    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
         self.input_cbk = input_cbk
         super(KeyboardThread, self).__init__(name=name)
         self.start()
 
     def run(self):
         while True:
-            self.input_cbk(input()) # waits to get input + Return
+            self.input_cbk(input())  # waits to get input + Return
 
 
 # Gets called when the user enters anything in the command line
@@ -59,14 +59,13 @@ input_thread = KeyboardThread(on_input)
 
 
 class EchoServer:
-    def __init__(self):
+    def __init__(self, port=65432, use_localhost=True):
         # Standard loopback interface address. Should be the ip address of the server computer.
         # HOST = '192.168.0.196'  # '127.0.0.1' for localhost
-        self.PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+        self.PORT = port  # Port to listen on (non-privileged ports are > 1023)
 
         # set to true if the connection should be restricted to localhost
-        self.useLocalhost = False
-        self.useLocalhost = True
+        self.useLocalhost = use_localhost
 
         self.t_run = True
         self.checkWhitelist = False  # set to True to use Whitelist
@@ -176,14 +175,14 @@ class EchoServer:
                 while True:
                     try:
                         connection, addr = s.accept()
-                        break # TODO: comment this line in, as it crashes both programs!
+                        break  # TODO: comment this line in, as it crashes both programs!
                     except socket.timeout:
                         pass
 
                     if not input_thread.is_alive():
                         return
                 # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
-                print("Successfully connected! ") #  + connection
+                print("Successfully connected! ")  #  + connection
                 with connection:
                     self.receive_next_message(connection, unityManager, executor, structure)
 
