@@ -5,6 +5,7 @@ nohup.out
 PyIron.log
 pyiron.log
 .idea/
+.vs
 inspectionProfiles/
 _build/
 apidoc/
