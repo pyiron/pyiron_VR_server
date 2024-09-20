@@ -24,12 +24,15 @@ class UnityManager:
     def GetJobSizes(self):
         sizes = []
         for name in UnityManager.project.list_all()['nodes']:
-            positions = UnityManager.project[name + "/output/generic/positions"]
-            if positions is None:
-                l = 0
+            if pr_strucute_container['t/OBJECT'] == 'StructureContainer':
+                l = UnityManager.project[name + "/structures/chunk_arrays/length"].max()
             else:
-                l = len(positions)
-                if l > 0:
-                    l *= len(positions[0])
+                positions = UnityManager.project[name + "/output/generic/positions"]
+                if positions is None:
+                    l = 0
+                else:
+                    l = len(positions)
+                    if l > 0:
+                        l *= len(positions[0])
             sizes.append(l)
         return {"jobSizes": sizes}

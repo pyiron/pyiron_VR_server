@@ -173,63 +173,89 @@ class Executor:
         data["potentials"] = list(Executor.job.list_potentials())
         return data
     
-    @staticmethod
-    def _get_max_sum_formular(structure_container):
+    def _max_sum_formular(self, container):
         result = {}
-        for s in structure_container.iter_structures():
-            for atom_t, n_atoms_of_t in s.get_number_species_atoms().items():
-                if atom_t not in result:
-                    result[atom_t] = n_atoms_of_t
-                elif n_atoms_of_t > result[atom_t]:
-                    result[atom_t] = n_atoms_of_t
+        for sym_array in container.get_array_ragged('symbols'):
+            atom_species, counts = np.unique(sym_array, return_counts=True)
+            for i, atom_s in enumerate(atom_species):
+                if atom_s not in result:
+                    result[atom_s] = counts[i]
+                elif result[atom_s] < counts[i]:
+                    result[atom_s] = counts[i]
         return result
 
     @staticmethod
-    def _fill_atoms(structure, atom_type, n_add_atom_type, at_position=None):
-        symbol_list = list(structure.symbols)
-        atom_t_idx = symbol_list.index(atom_type) if atom_type in symbol_list else 0
-        atom = structure[atom_t_idx]
-        structure += atom
-        if structure[-1].symbol != atom_type:
-            structure[-1] = atom_type
-        repl_atom = structure[-1]
-        if at_position is not None:
-            repl_atom.position = at_position
-        for i in range(n_add_atom_type - 1):
-            structure += repl_atom
-    
-    def _padd_structure(self, structure, max_sum_formular):
-        result = structure.copy()
-        s_info = structure.get_number_species_atoms()
-        for atom_t in max_sum_formular:
-            if atom_t in s_info:
-                if s_info[atom_t] < max_sum_formular[atom_t]:
-                    self._fill_atoms(result, atom_t, max_sum_formular[atom_t] - s_info[atom_t])
-            else:
-                self._fill_atoms(result, atom_t, max_sum_formular[atom_t], at_position=[-1000, -1000, -1000])
-        return result
-                
-    def _padded_structure_container(self, structure_container):
-        pr = Project('.')
-        scj = pr.create.job.StructureContainer('_tmp_never_saved')
-        max_sum_formular = self._get_max_sum_formular(structure_container)
-        for s in structure_container.iter_structures():
-            scj.add_structure(self._padd_structure(s, max_sum_formular))
-        return scj._container
+    def _get_to_be_added_atoms_dict(structure_symbols, max_sum_formular):
+        atom_species, counts = np.unique(structure_symbols, return_counts=True)
+        to_be_added = {}
+        to_be_dublicated_idx = {}
+        for i, atoms_s in enumerate(atom_species):
+            to_be_added[atoms_s] = max_sum_formular[atoms_s] - counts[i]
+            to_be_dublicated_idx[atoms_s] = np.where(structure_symbols == atoms_s)[0][0]
+        for atoms_s in max_sum_formular:
+            if atoms_s not in to_be_added:
+                to_be_added[atoms_s] = max_sum_formular[atoms_s]
+        return to_be_added, to_be_dublicated_idx
 
-    def _data_from_structurecontainer(self, job):
-        j_container = self._padded_structure_container(job)
+    @staticmethod
+    def _get_padded_struture_symbols(structure_symbols, to_be_added):
+        return np.hstack([structure_symbols] + [c * [s] for s, c in to_be_added.items()])
+    
+    def _get_sorting_map(self, structure_symbols, to_be_added):
+        structure_symbols = self._get_padded_struture_symbols(structure_symbols, to_be_added)
+        return np.argsort(structure_symbols, kind="stable")
+
+    def _get_sorted_padded_structure_symbols(self, structure_symbols, max_sum_formular):
+        to_be_added, to_be_dublicated_idx = self._get_to_be_added_atoms_dict(structure_symbols, max_sum_formular)
+        sort_map = self._get_sorting_map(structure_symbols, to_be_added)
+        return self._get_padded_struture_symbols(structure_symbols, to_be_added)[sort_map]
+                                      
+    def _expand_positions_to_max_sum_formular(self, structure_symbols, structure_positions, max_sum_formular, added_atom_position=None, default_added_atom_coords=-1000):
+        structure_symbols = structure_symbols.copy()
+        structure_positions = structure_positions.copy()
+
+        to_be_added, to_be_dublicated_idx = self._get_to_be_added_atoms_dict(structure_symbols, max_sum_formular)
+        sort_map = self._get_sorting_map(structure_symbols, to_be_added)
+
+
+        if added_atom_position:
+            coords_to_be_added = len(to_be_added) * [added_atom_position]
+        else:
+            coords_to_be_added = []
+            for atom_s in to_be_added:
+                if atom_s in to_be_dublicated_idx:
+                    coords_to_be_added += to_be_added[atom_s] * [structure_positions[to_be_dublicated_idx[atom_s]]]
+                else:
+                    coords_to_be_added += to_be_added[atom_s] * [[default_added_atom_coords, default_added_atom_coords, default_added_atom_coords]]
+        
+        structure_positions =  np.vstack([structure_positions] + coords_to_be_added)
+        
+        return structure_positions[sort_map]
+        
+    def _convert_structure_container_to_vr_data(self, structure_container):
+        container = structure_container._container
+        max_sum = self._max_sum_formular(container)
+        c_symbols = container.get_array_ragged('symbols')
+        c_positions = container.get_array_ragged('positions')
+        
+        padded_structures = []
+        for i in range(container.number_of_structures):
+            padded_structures.append(self._expand_positions_to_max_sum_formular(c_symbols[i], c_positions[i], max_sum))
+
+        symbols = self._get_sorted_padded_structure_symbols(c_symbols[0], max_sum)
+        
         return {
-            "elements": list(j_container.get_array_filled('symbols')[0]),
-            "size": j_container.length[0],
-            "cell": Formatter.array_to_vec3(j_container.cell[0]),
-            "frames": j_container.number_of_structures,
-            "positions": j_container.get_array_filled('positions')
+            "elements": list(symbols),
+            "size": len(padded_structures[0]),
+            "cell": Formatter.array_to_vec3(container.cell[0]),
+            "frames": container.number_of_structures,
+            "positions": np.array(padded_structures)
         }
+            
 
     def format_job(self):
         if isinstance(Executor.job, StructureContainer):
-            return self._data_from_structurecontainer(Executor.job)
+            return self._convert_structure_container_to_vr_data(Executor.job)
 
         data = {"elements": list(Structure.structure.get_chemical_symbols()),
                 "size": len(Structure.structure.positions)}
