@@ -4,8 +4,8 @@
 
 import traceback
 import UnityManager
-from Structure import Structure
-import Formatter
+from pyiron_vrplugin.Structure import Structure
+from pyiron_vrplugin.Formatter import dict_to_json, array_to_vec3
 import numpy as np
 
 
@@ -174,7 +174,7 @@ class Executor:
                 "size": len(Structure.structure.positions)}
 
         positions = Executor.job["output/generic/positions"]
-        data["cell"] = Formatter.array_to_vec3(Structure.structure.cell)
+        data["cell"] = array_to_vec3(Structure.structure.cell)
         if positions is None:
             data["frames"] = 1
             data["positions"] = Structure.structure.positions
@@ -204,7 +204,7 @@ class Executor:
         formated_data = self.format_general_settings(formated_data, generic_inp)
         formated_data = self.format_md_settings(formated_data, generic_inp)
         formated_data = self.format_minimize_settings(formated_data, generic_inp)
-        return Formatter.dict_to_json(formated_data)
+        return dict_to_json(formated_data)
 
 
 

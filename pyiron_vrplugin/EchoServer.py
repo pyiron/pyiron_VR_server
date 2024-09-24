@@ -11,23 +11,15 @@ import numpy as np
 import os
 import sys
 import traceback
-from pyiron.project import Project
-# import asyncio
 import threading
 
 """
 This script starts a server, which will use pyiron to for physics calculation and send the result to the Unity program.
 """
 
-# cwd = os.getcwd().replace("\\", "/").split("/")
-# Add the path to PYTHONPATH. This way the other scripts (e.g. Executor) can be called
-# um_path = os.getcwd()[:- len(cwd[-1]) - len(cwd[-2]) - 2]
 um_path = os.getcwd()
 print("umpath: " + um_path)
 sys.path.append(um_path)
-# import UnityManager as UM
-# import Structure
-# import Executor
 
 BLOCKSIZE = 4096
 # IP Addresses that may connect to the server. Each new computer has to be registered here
@@ -132,6 +124,8 @@ class EchoServer:
             if d_lst[0] == 'eval':
                 print(d_lst[0], ': {}'.format(data_new))
                 try:
+                    with open('eval_data.log', 'a') as f:
+                        f.write(data_new)
                     data = eval(data_new)
                 except:
                     traceback.print_exc()
@@ -145,6 +139,8 @@ class EchoServer:
             elif d_lst[0] == 'exec':
                 print('exec: {}'.format(data_new))
                 try:
+                    with open('exec_data.log', 'a') as f:
+                        f.write(data_new)
                     exec(data_new)
                 except:
                     traceback.print_exc()
