@@ -4,10 +4,9 @@
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
 from UnityManager import UnityManager
-from Executor import Executor
-import Formatter
-from Structure import Structure
-from EchoServer import EchoServer
+from pyiron_vrplugin.Executor import Executor
+from pyiron_vrplugin.Structure import Structure
+from pyiron_vrplugin.EchoServer import EchoServer
 
 
 class Manager:

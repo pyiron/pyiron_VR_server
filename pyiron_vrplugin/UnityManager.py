@@ -6,14 +6,6 @@ import os
 import sys
 from pyiron_atomistics import Project
 
-# get the path to this script C:\Users\<usr>\...\pyiron_vrplugin\pyiron_mpie\pyiron_vrplugin\pyiron_mpie\pyiron_vrplugin
-# remove \pyiron_mpie\pyiron_vrplugin
-cwd = os.getcwd().replace("\\", "/").split("/")
-# Add the path to PYTHONPATH. This way the other scripts (e.g. Executor) can be called
-sys.path.append(os.getcwd()[:- len(cwd[-1]) - len(cwd[-2]) - 2])
-from Executor import Executor
-# TODO: the block above might be outdated
-
 
 class UnityManager:
     project = None
@@ -26,11 +18,11 @@ class UnityManager:
         for name in UnityManager.project.list_all()['nodes']:
             positions = UnityManager.project[name + "/output/generic/positions"]
             if positions is None:
-                l = 0
+                total_n_atoms = 0
             else:
-                l = len(positions)
+                total_n_atoms = len(positions)
                 #  ToDo: Assumes uniform trajectory!
-                if l > 0:
-                    l *= len(positions[0])
-            sizes.append(l)
+                if total_n_atoms > 0:
+                    total_n_atoms *= len(positions[0])
+            sizes.append(total_n_atoms)
         return {"jobSizes": sizes}

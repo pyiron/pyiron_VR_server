@@ -3,11 +3,7 @@
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
 import UnityManager
-import Executor
 import Formatter
-from pyiron.project import Project
-import json
-import numpy
 
 
 class Structure:
