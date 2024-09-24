@@ -12,7 +12,8 @@ import numpy as np
 class Executor:
     job = None
 
-    def create_default_job(self, name):
+    @staticmethod
+    def create_default_job(name):
         # Initialize the new job as a Lammps with the name of the structure
         # TODO: initialize it with the name of the structure (e.g. Fe2_md_shifted)
         if name == "":

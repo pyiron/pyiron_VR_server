@@ -2,8 +2,8 @@
 # Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
-import UnityManager
-import Formatter
+from pyiron_vrplugin.UnityManager import UnityManager
+from pyiron_vrplugin.Formatter import array_to_vec3, dict_to_json
 
 
 class Structure:
@@ -22,7 +22,7 @@ class Structure:
 
     def create(self, element, repeat, cubic, orthorhombic):
         try:
-            Structure.structure = UnityManager.UnityManager.project.create.structure.ase.bulk(
+            Structure.structure = UnityManager.project.create.structure.ase.bulk(
                 element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
         except RuntimeError as e:
             return "Error: " + str(e)
@@ -30,29 +30,13 @@ class Structure:
             return "Error: " + str(e)
         return self.format_structure()
 
-    def format_structure(self):
+    @staticmethod
+    def format_structure():
         print("Formatting structure...")
-        formated_data = {"elements": list(Structure.structure.get_chemical_symbols()),
-                         "size": len(Structure.structure.positions), "frames": 1,
-                         "formula": Structure.structure.get_chemical_formula(),
-                         "cell": Formatter.array_to_vec3(Structure.structure.cell),
-                         "positions": Formatter.array_to_vec3(Structure.structure.positions)}
-        return Formatter.dict_to_json(formated_data)
+        formatted_data = {"elements": list(Structure.structure.get_chemical_symbols()),
+                          "size": len(Structure.structure.positions), "frames": 1,
+                          "formula": Structure.structure.get_chemical_formula(),
+                          "cell": array_to_vec3(Structure.structure.cell),
+                          "positions": array_to_vec3(Structure.structure.positions)}
+        return dict_to_json(formatted_data)
 
-
-    #
-    # if no structure loaded: create default struc and send to Unity
-    # if structure is loaded: return the structure
-
-# UnityManager.UnityManager()
-# myStruc = Structure()
-# myStruc.create_default_structure()
-# # print(myStruc.structure.cubic)
-# # print(myStruc.structure.orthorhombic)
-# # print(myStruc.get_data())
-# # myStruc.structure.name = "Mg"
-# # myStruc.structure = myStruc.structure.repeat([2 , 2, 2])
-# # myStruc.structure.cubic = True
-# # myStruc.structure.orthorhombic = True
-# # print(myStruc.get_data())
-# print(myStruc.format())

@@ -21,7 +21,7 @@ class UnityManager:
                 total_n_atoms = 0
             else:
                 total_n_atoms = len(positions)
-                #  ToDo: Assumes uniform trajectory!
+                #  ToDo: Assumes uniform trajectory! Might be ok for 'just' job sizes
                 if total_n_atoms > 0:
                     total_n_atoms *= len(positions[0])
             sizes.append(total_n_atoms)

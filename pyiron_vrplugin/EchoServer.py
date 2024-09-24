@@ -28,26 +28,23 @@ WHITELIST = ['192.168.0.198', '192.168.0.196', '127.0.0.1', '192.168.178.152', '
 
 # Needed for asynchronous input
 class KeyboardThread(threading.Thread):
-    def __init__(self, input_cbk=None, name='keyboard-input-thread'):
-        self.input_cbk = input_cbk
+    def __init__(self,  name='keyboard-input-thread'):
         super(KeyboardThread, self).__init__(name=name)
         self.start()
 
     def run(self):
         while True:
-            self.input_cbk(input())  # waits to get input + Return
+            self.input_cbk(input('write "q" to stop server:'))  # waits to get input + Return
 
+    def input_cbk(self, inp):
+        if inp in ['q', 'quit', 'exit']:
+            self._stop_application()
 
-# Gets called when the user enters anything in the command line
-def on_input(inp):
-    # The server will stop when no client is connected
-    print('Exiting the server')
-    exit()
-
-
-print("Press enter to stop the server")
-# start the asynchronous input thread
-input_thread = KeyboardThread(on_input)
+    @staticmethod
+    def _stop_application():
+        # The server will stop when no client is connected
+        print('Exiting the server')
+        exit()
 
 
 class EchoServer:
@@ -71,14 +68,14 @@ class EchoServer:
 
     # tries to receive some data through the socket. Returns if the socket is still connected
     def try_receive(self, connection):
-        newData = connection.recv(BLOCKSIZE).decode('ASCII')
+        new_data = connection.recv(BLOCKSIZE).decode('ASCII')
         # check if the client has disconnected
-        if newData == "":
+        if new_data == "":
             print("Client disconnected!")
             connection.close()
             self.data_buffer = ""
             return False
-        self.data_buffer += newData
+        self.data_buffer += new_data
         return True
 
     def receive_next_message(self, connection):
@@ -154,7 +151,7 @@ class EchoServer:
             else:
                 self.send_data('unknown command', connection)
 
-    def run_server(self):
+    def run_server(self, input_thread):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2.0)
             try:
@@ -166,7 +163,6 @@ class EchoServer:
                 
             s.listen()
             while self.t_run:
-                print("Stop the server by pressing the Enter Key")
                 print("Waiting for a client with IP Address " + self.ip_addr)
                 while True:
                     try:
@@ -184,7 +180,8 @@ class EchoServer:
 
             # t_run = False
 
-    def chunk_string(self, string, length):
+    @staticmethod
+    def chunk_string(string, length):
         return [string[0 + i:length + i] for i in range(0, len(string), length)]
 
     # get the ip-address of this computer
@@ -214,47 +211,21 @@ class EchoServer:
             my_data = str(data)
         else:
             if "positions" in data:
-            #    print(type(data["positions"]))
-            #    # np_data = np.array(data)
-            #    print("np type", type(data["positions"]))
-                # test_data = data.copy()
-                # myList = []
-                # test_positions = data["positions"].copy()
-                # test_positions = np.reshape(test_positions, (-1, 3))
-                # test_positions = np.float32(test_positions)
-                # for elm in test_positions:
-                #     myList.append({"x": elm[0], "y": elm[1], "z": elm[2]})
-                # test_data["positions"] = myList
-                # print(str(test_data)[:2000])
-                # print("len before ", len(str(test_data)))
-                # print("as string ", len(str(test_data).encode('ASCII')))
                 bin_data = data["positions"].flatten()
-                # del data["elements"]
-            #   print("bintype", type(bin_data))
                 del data["positions"]
-                # data["positions"] = len(data["positions"])
-            #    print("Test success")
             my_data = json.dumps(data, separators=(',', ':'))
         data_lst = self.chunk_string(my_data, BLOCKSIZE)
         num_bytes = (len(my_data)).to_bytes(4, byteorder='little', signed=True)
         conn.sendall(num_bytes)
-        # print(num_bytes)
         num_str = "" + str(len(my_data)) + ";"
 
-        # send the length of the message, then the message itself
-        # conn.sendall(num_str.encode('ASCII'))
         for block in data_lst:
             conn.sendall(block.encode('ASCII'))
 
         if bin_data is not None:
-            arr_size = BLOCKSIZE // 4
-            # print("lenn ", len(bin_data.tobytes()))
             bin_data = np.float32(bin_data)
-            # print("len ", len(bin_data.tobytes()))
             bin_data = bin_data.tobytes()
             conn.sendall(bin_data)
-            #for i in range((len(bin_data) + BLOCKSIZE - 1) // BLOCKSIZE):
-            #    conn.sendall(bin_data[i * arr_size:min(len(bin_data), (i + 1) * BLOCKSIZE)])
 
         # show the first 100 characters of the send message for debug purposes
         if len(my_data) > 100:

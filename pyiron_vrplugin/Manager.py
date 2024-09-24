@@ -6,11 +6,11 @@
 from UnityManager import UnityManager
 from pyiron_vrplugin.Executor import Executor
 from pyiron_vrplugin.Structure import Structure
-from pyiron_vrplugin.EchoServer import EchoServer
+from pyiron_vrplugin.EchoServer import EchoServer, KeyboardThread
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, input_thread):
         unityManager = UnityManager()
         executor = Executor()
         structure = Structure()
@@ -18,7 +18,8 @@ class Manager:
             return
         echoServer = EchoServer()
 
-        echoServer.run_server()
+        echoServer.run_server(input_thread)
 
 
-manager = Manager()
+input_thread = KeyboardThread()
+manager = Manager(input_thread)
