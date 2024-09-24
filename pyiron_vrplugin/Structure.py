@@ -2,8 +2,8 @@
 # Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
-from pyiron_vrplugin.UnityManager import UnityManager
 from pyiron_vrplugin.Formatter import array_to_vec3, dict_to_json
+from pyiron_atomistics import Project
 
 
 class Structure:
@@ -22,7 +22,7 @@ class Structure:
 
     def create(self, element, repeat, cubic, orthorhombic):
         try:
-            Structure.structure = UnityManager.project.create.structure.ase.bulk(
+            Structure.structure = Project('.').create.structure.ase.bulk(
                 element, cubic=cubic, orthorhombic=orthorhombic).repeat([repeat, repeat, repeat])
         except RuntimeError as e:
             return "Error: " + str(e)
@@ -32,7 +32,6 @@ class Structure:
 
     @staticmethod
     def format_structure():
-        print("Formatting structure...")
         formatted_data = {"elements": list(Structure.structure.get_chemical_symbols()),
                           "size": len(Structure.structure.positions), "frames": 1,
                           "formula": Structure.structure.get_chemical_formula(),

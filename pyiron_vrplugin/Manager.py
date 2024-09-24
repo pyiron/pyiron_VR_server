@@ -10,7 +10,8 @@ from pyiron_vrplugin.EchoServer import EchoServer, KeyboardThread
 
 
 class Manager:
-    def __init__(self, input_thread):
+    def __init__(self):
+
         unityManager = UnityManager()
         executor = Executor()
         structure = Structure()
@@ -18,8 +19,9 @@ class Manager:
             return
         echoServer = EchoServer()
 
+        input_thread = KeyboardThread()
         echoServer.run_server(input_thread)
 
 
-input_thread = KeyboardThread()
-manager = Manager(input_thread)
+if __name__ == '__main__':
+    Manager()

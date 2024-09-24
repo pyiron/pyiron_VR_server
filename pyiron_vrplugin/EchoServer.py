@@ -6,20 +6,15 @@
 
 import socket
 import json
+from time import sleep
 
 import numpy as np
-import os
-import sys
 import traceback
 import threading
 
 """
 This script starts a server, which will use pyiron to for physics calculation and send the result to the Unity program.
 """
-
-um_path = os.getcwd()
-print("umpath: " + um_path)
-sys.path.append(um_path)
 
 BLOCKSIZE = 4096
 # IP Addresses that may connect to the server. Each new computer has to be registered here
@@ -33,6 +28,7 @@ class KeyboardThread(threading.Thread):
         self.start()
 
     def run(self):
+        sleep(1)
         while True:
             self.input_cbk(input('write "q" to stop server:'))  # waits to get input + Return
 

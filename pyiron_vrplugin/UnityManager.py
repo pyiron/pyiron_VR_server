@@ -3,7 +3,6 @@
 # Distributed under the terms of "New BSD License", see the LICENSE file.
 
 import os
-import sys
 from pyiron_atomistics import Project
 
 
