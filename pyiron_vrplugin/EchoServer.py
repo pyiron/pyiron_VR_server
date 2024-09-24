@@ -89,7 +89,7 @@ class EchoServer:
         self.data_buffer += newData
         return True
 
-    def receive_next_message(self, connection, unityManager, executor, structure):
+    def receive_next_message(self, connection):
         # if self.checkWhitelist:
         #     print('Connected by', addr)
         #     if addr[0] not in WHITELIST:
@@ -158,7 +158,7 @@ class EchoServer:
             else:
                 self.send_data('unknown command', connection)
 
-    def run_server(self, unityManager, executor, structure):
+    def run_server(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2.0)
             try:
@@ -184,7 +184,7 @@ class EchoServer:
                 # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
                 print("Successfully connected! ")  #  + connection
                 with connection:
-                    self.receive_next_message(connection, unityManager, executor, structure)
+                    self.receive_next_message(connection)
 
             # t_run = False
 

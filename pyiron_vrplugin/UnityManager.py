@@ -6,8 +6,8 @@ import os
 import sys
 from pyiron_atomistics import Project
 
-# get the path to this script C:\Users\<usr>\...\vrplugin\pyiron_mpie\vrplugin\pyiron_mpie\vrplugin
-# remove \pyiron_mpie\vrplugin
+# get the path to this script C:\Users\<usr>\...\pyiron_vrplugin\pyiron_mpie\pyiron_vrplugin\pyiron_mpie\pyiron_vrplugin
+# remove \pyiron_mpie\pyiron_vrplugin
 cwd = os.getcwd().replace("\\", "/").split("/")
 # Add the path to PYTHONPATH. This way the other scripts (e.g. Executor) can be called
 sys.path.append(os.getcwd()[:- len(cwd[-1]) - len(cwd[-2]) - 2])
