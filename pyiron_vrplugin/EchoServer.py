@@ -57,16 +57,16 @@ class EvalSentMassages:
         self.executor = executor
         self.eval_methods = {
             "structure.create": self.structure.create,
-            "unityManager.unity_manager.path": self._getitem_project_path,
-            "unityManager.unity_manager.list_all": self.unity_manager.project.list_all,
+            "unityManager.project.path": self._getitem_project_path,
+            "unityManager.project.list_all": self.unity_manager.project.list_all,
         }
         self._parse_args_for = {
             "structure.create": self._parse_structure_args,
-            "unityManager.unity_manager.path": self._parse_project_path_getitem,
-            "unityManager.unity_manager.list_all": self._parse_pr_list_all_args,
+            "unityManager.project.path": self._parse_project_path_getitem,
+            "unityManager.project.list_all": self._parse_pr_list_all_args,
         }
         self.exec_methods = {
-            "unityManager.unity_project =": self._set_unity_manager_project
+            "unityManager.project =": self._set_unity_manager_project
         }
 
     def _set_unity_manager_project(self, msg: str):
@@ -100,12 +100,12 @@ class EvalSentMassages:
 
     @staticmethod
     def _convert_str_bool_to_python_bool(str_bool: str):
-        if str_bool == "True":
+        if str_bool.strip() == "True":
             return True
-        elif str_bool == "False":
+        elif str_bool.strip() == "False":
             return False
         else:
-            raise ValueError(f"Expected a string with 'True' or 'False' not {str_bool}")
+            raise ValueError(f"Expected a string with 'True' or 'False' not '{str_bool}'")
 
     def _parse_structure_args(self, msg: str):
         """parses the arguments for structure.create. Expects '(str, int, bool, bool)'"""
