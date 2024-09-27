@@ -62,12 +62,28 @@ class EvalSentMassages:
         }
         self._parse_args_for = {
             "structure.create": self._parse_structure_args,
-            "unityManager.project.path": self._parse_project_path_getitem,
+            "unityManager.project.path": self._parse_slice,
             "unityManager.project.list_all": self._parse_pr_list_all_args,
         }
         self.exec_methods = {
-            "unityManager.project =": self._set_unity_manager_project
+            "unityManager.project =": self._set_unity_manager_project,
+            "structure.structure.positions": self._set_new_structure_positions
         }
+
+    @staticmethod
+    def _strip_parenthesis(msg, parenthesis_type=None):
+        parenthesis_type = parenthesis_type or '()'
+        msg = msg.strip()
+        if msg.startswith(parenthesis_type[0]) and msg.endswith(parenthesis_type[1]):
+            return msg[1:-1]
+        else:
+            raise ValueError(msg)
+
+    def _set_new_structure_positions(self, msg: str):
+        s = msg.strip().split('=')
+        slc = self._parse_slice(s[0])
+        vec = [float(i) for i in self._strip_parenthesis(s[1], '[]').split(',')]
+        self.structure.structure.postions[slc] = vec
 
     def _set_unity_manager_project(self, msg: str):
         if msg.strip().startswith("Project(") and msg.endswith(")"):
@@ -85,18 +101,15 @@ class EvalSentMassages:
         else:
             raise ValueError(msg)
 
-    @staticmethod
-    def _parse_project_path_getitem(item_str: str):
+    def _parse_slice(self, item_str: str):
         slc = []
-        if item_str.startswith("[") and item_str.endswith("]"):
-            for item in item_str.split(":"):
-                if item == "":
-                    slc.append(None)
-                else:
-                    slc.append(int(item))
-            return slice(*slc)
-        else:
-            raise ValueError(item_str)
+        item_str = self._strip_parenthesis(item_str, '[]')
+        for item in item_str.split(":"):
+            if item == "":
+                slc.append(None)
+            else:
+                slc.append(int(item))
+        return slice(*slc)
 
     @staticmethod
     def _convert_str_bool_to_python_bool(str_bool: str):
