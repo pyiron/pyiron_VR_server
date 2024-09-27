@@ -43,11 +43,92 @@ class KeyboardThread(threading.Thread):
         exit()
 
 
+class EvalSentMassages:
+    def __init__(self, unity_manager, structure, executor):
+        self.unity_manager = unity_manager
+        self.structure = structure
+        self.executor = executor
+        self.eval_methods = {"structure.create": self.structure.create,
+                             "unityManager.unity_manager.path": self._getitem_project_path,
+                             "unityManager.unity_manager.list_all": self.unity_manager.project.list_all
+                             }
+        self._parse_args_for = {"structure.create": self._parse_structure_args,
+                                "unityManager.unity_manager.path": self._parse_project_path_getitem,
+                                "unityManager.unity_manager.list_all": self._parse_pr_list_all_args
+                                }
+        self.exec_methods = {"unityManager.unity_project =": self._set_unity_manager_project}
+
+    def _set_unity_manager_project(self, msg: str):
+        if msg.strip().startswith('Project(') and msg.endswith(')'):
+            self.unity_manager.project = self.unity_manager.project.__class__(msg.strip()[len('Project('):-1])
+
+    def _getitem_project_path(self, slice_obj):
+        return self.unity_manager.path[slice_obj]
+
+    @staticmethod
+    def _parse_pr_list_all_args(msg: str):
+        if msg == '()':
+            return []
+        else:
+            raise ValueError(msg)
+
+    @staticmethod
+    def _parse_project_path_getitem(item_str: str):
+        slc = []
+        if item_str.startswith('[') and item_str.endswith(']'):
+            for item in item_str.split(':'):
+                if item == "":
+                    slc.append(None)
+                else:
+                    slc.append(int(item))
+            return slice(*slc)
+        else:
+            raise ValueError(item_str)
+
+    @staticmethod
+    def _convert_str_bool_to_python_bool(str_bool: str):
+        if str_bool == 'True':
+            return True
+        elif str_bool == 'False':
+            return False
+        else:
+            raise ValueError(f"Expected a string with 'True' or 'False' not {str_bool}")
+
+    def _parse_structure_args(self, msg: str):
+        """parses the arguments for structure.create. Expects '(str, int, bool, bool)'"""
+        if msg.startswith('(') and msg.endswith(')'):
+            s = msg[1:-1].split(',')
+            if len(s) != 4:
+                raise ValueError(f'No valid msg={msg}, should have 4 members: {s}')
+            s[0] = s[0][1:-1]
+            s[1] = int(s[1])
+            s[2] = self._convert_str_bool_to_python_bool(s[2])
+            s[3] = self._convert_str_bool_to_python_bool(s[3])
+            return s
+        else:
+            raise ValueError(msg)
+
+    def eval(self, message: str):
+        for method in self.eval_methods:
+            if message.startswith(method):
+                args = self._parse_args_for[method](message[len(method):])
+                return self.eval_methods[method](*args)
+        raise ValueError(f"No such method {message}")
+
+    def exec(self, message: str):
+        for method in self.exec_methods:
+            if message.startswith(method):
+                self.exec_methods[method](message[len(method):])
+                return
+        raise ValueError(f"No such method {message}")
+
+
 class EchoServer:
-    def __init__(self, port=65432, use_localhost=True):
+    def __init__(self, unity_project, structure, executor, port=65432, use_localhost=True):
         # Standard loopback interface address. Should be the ip address of the server computer.
         # HOST = '192.168.0.196'  # '127.0.0.1' for localhost
         self.PORT = port  # Port to listen on (non-privileged ports are > 1023)
+        self._eval = EvalSentMassages(unity_project, structure, executor)
 
         # set to true if the connection should be restricted to localhost
         self.useLocalhost = use_localhost
@@ -119,7 +200,7 @@ class EchoServer:
                 try:
                     with open('eval_data.log', 'a') as f:
                         f.write(data_new)
-                    data = eval(data_new)
+                    data = self._eval.eval(data_new)
                 except:
                     traceback.print_exc()
                     data = "error: Invalid Action\nLook at the server log for more information"
@@ -134,7 +215,7 @@ class EchoServer:
                 try:
                     with open('exec_data.log', 'a') as f:
                         f.write(data_new)
-                    exec(data_new)
+                    self._eval.exec(data_new)
                 except:
                     traceback.print_exc()
                     self.send_data("error: Invalid Action\nLook at the server log for more information",

@@ -119,7 +119,7 @@ class Executor:
     # # called from Unity, currently not in use, last line is outdated
     # def add_new_atom(self, element):
     #     # todo: find a good position for the new atom
-    #     Executor.job.structure += Executor.job.project.create_atoms([element], [(2, 0, 0)])
+    #     Executor.job.structure += Executor.job.unity_manager.create_atoms([element], [(2, 0, 0)])
     #     # self.pr.structure.set_absolute()
     #     return self.get_structure_data()
 

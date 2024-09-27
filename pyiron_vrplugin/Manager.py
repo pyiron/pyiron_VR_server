@@ -17,7 +17,7 @@ class Manager:
         structure = Structure()
         if structure.structure is None:
             return
-        echoServer = EchoServer()
+        echoServer = EchoServer(unityManager, structure, executor)
 
         input_thread = KeyboardThread()
         echoServer.run_server(input_thread)
