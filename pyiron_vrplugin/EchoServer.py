@@ -195,7 +195,6 @@ class EchoServer:
         # set to true if the connection should be restricted to localhost
         self.useLocalhost = use_localhost
 
-        self.t_run = True
         self.checkWhitelist = False  # set to True to use Whitelist
         self.ip_addr = self.get_ip()
         # could be used to ask new clients for a PW, determined at the start of the server
@@ -204,6 +203,14 @@ class EchoServer:
 
         # a buffer for the received data
         self.data_buffer = ""
+        self._thread: KeyboardThread = None
+
+    @property
+    def t_run(self) -> bool:
+        if self._thread is None:
+            return False
+        else:
+            return self._thread.is_alive()
 
     # tries to receive some data through the socket. Returns if the socket is still connected
     def try_receive(self, connection):
@@ -227,7 +234,7 @@ class EchoServer:
         #         continue
         #     self.checkWhitelist = False
 
-        while True:
+        while self.t_run:
             # Message protocol: len_of_message;messagelen_of_next_message;next_message
             # Example: 20;exec:print("test")
             # One message will be read per loop
@@ -293,6 +300,7 @@ class EchoServer:
                 self.send_data("unknown command", connection)
 
     def run_server(self, input_thread):
+        self._thread = input_thread
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2.0)
             try:
@@ -314,8 +322,6 @@ class EchoServer:
                     except socket.timeout:
                         pass
 
-                    if not input_thread.is_alive():
-                        return
                 # Next line crashes the program. Use it to test how the client reacts (it should not crash, but does so atm)
                 print("Successfully connected! ")  #  + connection
                 with connection:
