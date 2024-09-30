@@ -60,7 +60,7 @@ class EvalSentMassages:
             "structure.get_data": self.structure.get_data,
             "unityManager.project.path": self._getitem_project_path,
             "unityManager.project.list_all": self.unity_manager.project.list_all,
-            "unityManager.GetJobSizes": self.unity_manager.GetData
+            "unityManager.GetJobSizes": self.unity_manager.GetJobSizes
         }
         self._parse_args_for = {
             "structure.create": self._parse_structure_args,
