@@ -60,22 +60,40 @@ class EvalSentMassages:
             "structure.get_data": self.structure.get_data,
             "unityManager.project.path": self._getitem_project_path,
             "unityManager.project.list_all": self.unity_manager.project.list_all,
+            "executor.load_job": self.executor.load_job,
             "unityManager.GetJobSizes": self.unity_manager.GetJobSizes
         }
         self._parse_args_for = {
             "structure.create": self._parse_structure_args,
             "unityManager.project.path": self._parse_slice,
             "unityManager.project.list_all": self._parse_pr_list_all_args,
+            "executor.load_job": self._load_job,
         }
         self.exec_methods = {
             "unityManager.project =": self._set_unity_manager_project,
-            "structure.structure.positions": self._set_new_structure_positions
+            "structure.structure.positions": self._set_new_structure_positions,
         }
         #  ToDO Fix Errors:
         # - EvalSentMsg._getitem_proj_path() argument after * must be an iterable, not slice
         # - GetJobSizes is missing
         # - structure.get_data missing
         # exex positions: Atoms obj has no attrubute 'postions'
+
+    def _load_job(self, msg: str):
+        msg = self._strip_parenthesis(msg)
+        if msg == "None":
+            return [None]
+        load_job_items = msg.split(',')
+        job_name = load_job_items[1] if len(load_job_items) == 2 else None
+        job_str = load_job_items[0]
+        unity_pr_key = 'unityManager.project'
+        if job_str.strip().startswith(unity_pr_key):
+            slc = self._parse_slice(job_str[len(unity_pr_key):])[0]
+            job = self.unity_manager.project[slc]
+        else:
+            print(f'Unexpected argument in {msg}.')
+            job = None
+        return [job, job_name]
 
     @staticmethod
     def _strip_parenthesis(msg, parenthesis_type=None):

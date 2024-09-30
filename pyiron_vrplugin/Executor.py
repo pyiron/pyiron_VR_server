@@ -23,7 +23,8 @@ class Executor:
         if len(Executor.job.list_potentials()) > 0:
             Executor.job.potential = Executor.job.list_potentials()[0]
 
-    def load_job(self, job, jobName=""):
+    def load_job(self, job, jobName=None):
+        jobName = jobName or ""
         if job is None:
             # create a new job
             self.create_default_job(jobName)
