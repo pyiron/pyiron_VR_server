@@ -57,8 +57,10 @@ class EvalSentMassages:
         self.executor = executor
         self.eval_methods = {
             "structure.create": self.structure.create,
+            "structure.get_data": self.structure.get_data,
             "unityManager.project.path": self._getitem_project_path,
             "unityManager.project.list_all": self.unity_manager.project.list_all,
+            "unityManager.GetJobSizes": self.unity_manager.GetData
         }
         self._parse_args_for = {
             "structure.create": self._parse_structure_args,
@@ -69,6 +71,11 @@ class EvalSentMassages:
             "unityManager.project =": self._set_unity_manager_project,
             "structure.structure.positions": self._set_new_structure_positions
         }
+        #  ToDO Fix Errors:
+        # - EvalSentMsg._getitem_proj_path() argument after * must be an iterable, not slice
+        # - GetJobSizes is missing
+        # - structure.get_data missing
+        # exex positions: Atoms obj has no attrubute 'postions'
 
     @staticmethod
     def _strip_parenthesis(msg, parenthesis_type=None):
@@ -81,9 +88,9 @@ class EvalSentMassages:
 
     def _set_new_structure_positions(self, msg: str):
         s = msg.strip().split('=')
-        slc = self._parse_slice(s[0])
+        slc = self._parse_slice(s[0])[0]
         vec = [float(i) for i in self._strip_parenthesis(s[1], '[]').split(',')]
-        self.structure.structure.postions[slc] = vec
+        self.structure.structure.positions[slc] = vec
 
     def _set_unity_manager_project(self, msg: str):
         if msg.strip().startswith("Project(") and msg.endswith(")"):
@@ -91,7 +98,9 @@ class EvalSentMassages:
                 msg.strip()[len("Project(") : -1]
             )
 
-    def _getitem_project_path(self, slice_obj):
+    def _getitem_project_path(self, slice_obj_list):
+        # To allow for *args it needs to be wrapped in a list...
+        slice_obj = slice_obj_list[0]
         return self.unity_manager.path[slice_obj]
 
     @staticmethod
@@ -109,7 +118,7 @@ class EvalSentMassages:
                 slc.append(None)
             else:
                 slc.append(int(item))
-        return slice(*slc)
+        return [slice(*slc)]
 
     @staticmethod
     def _convert_str_bool_to_python_bool(str_bool: str):
@@ -134,10 +143,17 @@ class EvalSentMassages:
         else:
             raise ValueError(msg)
 
+    def _default_parser(self, msg: str):
+        s = self._strip_parenthesis(msg)
+        if len(s) > 0:
+            print(f"Unexpected arguments, ignored! {s}")
+        return []
+
     def eval(self, message: str):
         for method in self.eval_methods:
             if message.startswith(method):
-                args = self._parse_args_for[method](message[len(method) :])
+                args_parser = self._parse_args_for.get(method, self._default_parser)
+                args = args_parser(message[len(method) :])
                 return self.eval_methods[method](*args)
         raise ValueError(f"No such method {message}")
 
