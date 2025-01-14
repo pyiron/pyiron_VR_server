@@ -59,10 +59,13 @@ input_thread = KeyboardThread(on_input)
 
 
 class EchoServer:
-    def __init__(self):
+    def __init__(self, port=None):
         # Standard loopback interface address. Should be the ip address of the server computer.
         # HOST = '192.168.0.196'  # '127.0.0.1' for localhost
-        self.PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+        if port is None:
+            self.PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+        else:
+            self.PORT = port  # Port to listen on (non-privileged ports are > 1023)
 
         # set to true if the connection should be restricted to localhost
         self.useLocalhost = False

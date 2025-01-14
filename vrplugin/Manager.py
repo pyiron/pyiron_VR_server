@@ -11,15 +11,20 @@ from EchoServer import EchoServer
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, port=None):
         unityManager = UnityManager()
         executor = Executor()
         structure = Structure()
         if structure.structure is None:
             return
-        echoServer = EchoServer()
+        echoServer = EchoServer(port)
 
         echoServer.run_server(unityManager, executor, structure)
 
 
-manager = Manager()
+try:
+    port = int(input("Port for the server:"))
+except:
+    port = None
+
+manager = Manager(port)
