@@ -175,7 +175,7 @@ class EchoServer:
             s.listen()
             while self.t_run:
                 print("Stop the server by pressing the Enter Key")
-                print(f"Waiting for a client with IP Address {self.ip_add} on port {self.PORT}")
+                print(f"Waiting for a client with IP Address {self.ip_addr} on port {self.PORT}")
                 while True:
                     try:
                         connection, addr = s.accept()
