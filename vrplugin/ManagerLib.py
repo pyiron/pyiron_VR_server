@@ -7,11 +7,11 @@ from UnityManager import UnityManager
 from Executor import Executor
 import Formatter
 from Structure import Structure
-from EchoServer import EchoServer
 
 
 class Manager:
     def __init__(self, port=None):
+        from EchoServer import EchoServer
         unityManager = UnityManager()
         executor = Executor()
         structure = Structure()

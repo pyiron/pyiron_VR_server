@@ -34,5 +34,5 @@ class UnityManager:
                     l = len(positions)
                     if l > 0:
                         l *= len(positions[0])
-            sizes.append(l)
+            sizes.append(int(l))
         return {"jobSizes": sizes}

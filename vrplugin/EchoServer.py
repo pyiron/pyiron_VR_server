@@ -69,7 +69,7 @@ class EchoServer:
 
         # set to true if the connection should be restricted to localhost
         self.useLocalhost = False
-        self.useLocalhost = True
+        #self.useLocalhost = True
 
         self.t_run = True
         self.checkWhitelist = False  # set to True to use Whitelist
@@ -218,7 +218,7 @@ class EchoServer:
             data = data.tolist()
         # Unitys JsonUtility can't deserialize primitive data types, so they get send directly
         bin_data = None
-        if type(data) == str or type(data) == int or type(data) == float or type(data) == bool:
+        if type(data) == str or isinstance(data,(int, np.int32)) or type(data) == float or type(data) == bool:
             my_data = str(data)
         else:
             if "positions" in data:
@@ -242,7 +242,12 @@ class EchoServer:
                 del data["positions"]
                 # data["positions"] = len(data["positions"])
             #    print("Test success")
-            my_data = json.dumps(data, separators=(',', ':'))
+            try:
+                my_data = json.dumps(data, separators=(',', ':'))
+            except Exception as e:
+                traceback.print_exc()
+                print('Error on decoding data:', data)
+                my_data = "error: Invalid Action\nLook at the server log for more information"
         data_lst = self.chunk_string(my_data, BLOCKSIZE)
         num_bytes = (len(my_data)).to_bytes(4, byteorder='little', signed=True)
         conn.sendall(num_bytes)
